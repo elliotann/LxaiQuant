@@ -139,6 +139,11 @@
             <version>0.0.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
+        <!-- ML / 因子库模块（骨架；业务类逐步自 engine.service.ml 迁入） -->
+        <dependency>
+            <groupId>com.chain.ai</groupId>
+            <artifactId>ai-ml</artifactId>
+        </dependency>
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>

@@ -1,3 +1,7 @@
+# 量化环境：live=实盘（默认），backtest=回测
+quant:
+  env: live
+
 spring:
   profiles:
     active: dev

@@ -21,6 +21,7 @@
     <modules>
         <module>ai-common</module>
         <module>ai-data</module>
+        <module>ai-ml</module>
         <module>ai-risk</module>
         <module>ai-order</module>
         <module>ai-signal</module>
@@ -251,6 +252,11 @@
             <dependency>
                 <groupId>com.chain.ai</groupId>
                 <artifactId>ai-data</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.chain.ai</groupId>
+                <artifactId>ai-ml</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

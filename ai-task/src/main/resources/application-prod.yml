@@ -1,3 +1,6 @@
+quant:
+  env: live
+
 server:
   port: 8082
 

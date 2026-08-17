@@ -16,7 +16,7 @@ import org.springframework.context.annotation.ComponentScan;
     "com.chain.ai.trade.agent",
     "com.chain.ai.trade.extension",
     "com.chain.ai.trade.engine2",
-    "com.chain.ai.trade.engine2"
+    "com.chain.ai.trade.ml"
 })
 @MapperScan({
     "com.chain.ai.trade.engine.mapper",
@@ -24,7 +24,8 @@ import org.springframework.context.annotation.ComponentScan;
     "com.chain.ai.trade.backtest.mapper",
     "com.chain.ai.trade.engine.strategy.mapper",
     "com.chain.ai.trade.member.mapper",
-    "com.chain.ai.trade.order.mapper"
+    "com.chain.ai.trade.order.mapper",
+    "com.chain.ai.trade.ml.mapper"
 })
 public class AiQuantApplication {
 

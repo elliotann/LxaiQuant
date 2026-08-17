@@ -1,3 +1,6 @@
+quant:
+  env: live
+
 spring:
   application:
     name: ai-quant
