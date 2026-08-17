@@ -1,0 +1,74 @@
+{
+  "d44df0a0673fa0e789af228383c400923624a9a628a0d7e53deedfe1b6ac082b": {
+    "deviceId": "d44df0a0673fa0e789af228383c400923624a9a628a0d7e53deedfe1b6ac082b",
+    "publicKey": "4JB-54pcK0peaGSJXnDmZAXFfVMoGkZmVCzA6AHwJTs",
+    "platform": "Win32",
+    "clientId": "openclaw-control-ui",
+    "clientMode": "webchat",
+    "role": "operator",
+    "roles": [
+      "operator"
+    ],
+    "scopes": [
+      "operator.admin",
+      "operator.approvals",
+      "operator.pairing"
+    ],
+    "approvedScopes": [
+      "operator.admin",
+      "operator.approvals",
+      "operator.pairing"
+    ],
+    "tokens": {
+      "operator": {
+        "token": "TL2XK7uKoNXi-TawsumHsZRZDhNTOZfr8q8c32uFrZg",
+        "role": "operator",
+        "scopes": [
+          "operator.admin",
+          "operator.approvals",
+          "operator.pairing"
+        ],
+        "createdAtMs": 1772167205804,
+        "lastUsedAtMs": 1772167213302
+      }
+    },
+    "createdAtMs": 1772167205803,
+    "approvedAtMs": 1772167205803
+  },
+  "8f0b11d409fca33bb16e6ce16049b116745e13a83bc9f8b488484ad9248c4f49": {
+    "deviceId": "8f0b11d409fca33bb16e6ce16049b116745e13a83bc9f8b488484ad9248c4f49",
+    "publicKey": "LZIiMniKf-3fsqj-KiJ_2MEEOw7Tw33ydFQjK1rdkns",
+    "platform": "Win32",
+    "clientId": "openclaw-control-ui",
+    "clientMode": "webchat",
+    "role": "operator",
+    "roles": [
+      "operator"
+    ],
+    "scopes": [
+      "operator.admin",
+      "operator.approvals",
+      "operator.pairing"
+    ],
+    "approvedScopes": [
+      "operator.admin",
+      "operator.approvals",
+      "operator.pairing"
+    ],
+    "tokens": {
+      "operator": {
+        "token": "9qz0lfdLywOY3liEJ0GDTDS3wVr6UXqQN1wBuywHpWY",
+        "role": "operator",
+        "scopes": [
+          "operator.admin",
+          "operator.approvals",
+          "operator.pairing"
+        ],
+        "createdAtMs": 1772167292023,
+        "lastUsedAtMs": 1772167648310
+      }
+    },
+    "createdAtMs": 1772167292023,
+    "approvedAtMs": 1772167292023
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "interval_hours": 24,
+  "enabled": true,
+  "mode": "daily",
+  "test_mode": true,
+  "openclaw_agent": "main",
+  "analysis_prompt": "请分析最新的量化交易复盘报告，并提供专业的交易建议。"
+}

@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS `auto_search_result` (
+  `id` varchar(32) NOT NULL COMMENT '主键ID',
+  `search_id` varchar(32) NOT NULL COMMENT '搜索任务ID',
+  `symbol` varchar(32) NOT NULL COMMENT '交易对',
+  `status` varchar(16) NOT NULL DEFAULT 'RUNNING' COMMENT '状态: RUNNING/DONE/FAILED/APPLIED',
+  `total_combinations` int(11) NOT NULL DEFAULT 0 COMMENT '总组合数',
+  `completed_combinations` int(11) NOT NULL DEFAULT 0 COMMENT '已完成组合数',
+  `best_so_far` json DEFAULT NULL COMMENT '当前最佳组合',
+  `final_top20` json DEFAULT NULL COMMENT '最终Top20结果',
+  `request_json` json DEFAULT NULL COMMENT '搜索请求参数',
+  `start_time` datetime DEFAULT NULL COMMENT '开始时间',
+  `end_time` datetime DEFAULT NULL COMMENT '结束时间',
+  `error_msg` varchar(500) DEFAULT NULL COMMENT '错误信息',
+  `create_by` varchar(64) DEFAULT NULL COMMENT '创建人',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_by` varchar(64) DEFAULT NULL COMMENT '更新人',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `delete_flag` tinyint(1) DEFAULT 0 COMMENT '删除标志',
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_search_id` (`search_id`) USING BTREE,
+  KEY `idx_symbol` (`symbol`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='特征自动搜索结果表';

@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.2.26",
+    "lastTouchedAt": "2026-02-27T04:32:25.702Z"
+  },
+  "agents": {
+    "defaults": {
+      "workspace": "F:\\project\\lenzeto\\openclaw_data\\.openclaw\\workspace",
+      "compaction": {
+        "mode": "safeguard"
+      }
+    }
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "restart": true,
+    "ownerDisplay": "raw"
+  },
+  "gateway": {
+    "auth": {
+      "mode": "token",
+      "token": "cd6e78ec4badccb0049029d551e23b305ff37a6432031b89"
+    }
+  }
+}

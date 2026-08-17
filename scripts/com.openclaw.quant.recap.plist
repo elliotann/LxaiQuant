@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.openclaw.quant.recap</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/python3</string>
+        <string>/Users/huangxuean/IdeaProjects/lenzeto/scripts/openclaw-quant-scheduler-v2.py</string>
+    </array>
+    <key>StartCalendarInterval</key>
+    <array>
+        <dict>
+            <key>Hour</key>
+            <integer>17</integer>
+            <key>Minute</key>
+            <integer>0</integer>
+        </dict>
+    </array>
+    <key>StandardOutPath</key>
+    <string>/Users/huangxuean/IdeaProjects/lenzeto/scripts/quant-recap-launchd.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/huangxuean/IdeaProjects/lenzeto/scripts/quant-recap-launchd.error.log</string>
+    <key>WorkingDirectory</key>
+    <string>/Users/huangxuean/IdeaProjects/lenzeto/scripts</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PYTHONPATH</key>
+        <string>/Users/huangxuean/IdeaProjects/lenzeto/scripts</string>
+    </dict>
+</dict>
+</plist>

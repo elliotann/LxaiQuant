@@ -1,0 +1,19 @@
+{
+  "id": "quant-bridge",
+  "name": "Quant Bridge",
+  "description": "Connect OpenClaw to local quant trading system APIs",
+  "version": "1.0.0",
+  "skills": ["skills"],
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "baseUrl": { "type": "string" },
+      "token": { "type": "string" },
+      "defaultAccountId": { "type": "string" },
+      "defaultSymbol": { "type": "string" },
+      "defaultInterval": { "type": "string" }
+    }
+  }
+}
+

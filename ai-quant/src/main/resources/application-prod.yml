@@ -1,0 +1,223 @@
+spring:
+  application:
+    name: ai-quant
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ethandy202307@gmail.com
+    protocol: smtp
+    password: ovvm eadm qrlt dluh
+    properties:
+      mail:
+        smtp:
+          auth: true
+          connectiontimeout: 10000
+          timeout: 10000
+          writetimeout: 10000
+          starttls:
+            enable: true
+          ssl:
+            trust: smtp.gmail.com
+          socks:
+            host: 127.0.0.1
+            port: 7890
+
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/vdr_shop_test?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+    username: root
+    password: Hxa104906
+
+    druid:
+      initial-size: 2
+      min-idle: 2
+      async-init: true          # 关键！让连接池在后台初始化，不阻塞主线程
+      max-active: 20
+      max-wait: 60000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 1
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      filter:
+        stat:
+          enabled: true
+          log-slow-sql: true
+          slow-sql-millis: 1000
+        wall:
+          enabled: true
+
+  sql:
+    init:
+      mode: always
+      continue-on-error: true
+
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+  redis:
+    host: localhost
+    port: 6379
+    password:
+    database: 0
+    timeout: 3000
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: -1ms
+
+server:
+  port: 8118
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: auto
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.chain.ai.trade.engine.signal.entity.dos,com.chain.ai.trade.engine.strategy.entity.dos
+  mapper-package: com.chain.ai.trade.engine.signal.mapper,com.chain.ai.trade.engine.strategy.mapper
+
+alert:
+  mail:
+    enabled: true
+    to: 13713587424@163.com
+
+risk:
+  orchestrator:
+    default-evaluators: trend-strength,volume-confirmation,risk-reward,elliott-wave
+    default-adjusters: quality-based,risk-based
+    multi-timeframe:
+      enabled: false
+      timeframes: H1,M15,M3
+      data-limit: 500
+    min-composite-score: 0.5
+    base-position-size: 1.0
+    max-recommended-signals: 10
+  evaluator:
+    elliott-wave:
+      weight: 1.5
+      min-bars: 200
+      fib-tolerance: 0.25
+      factors:
+        base-confidence: 0.35
+        structure-completeness: 0.25
+        confluence: 0.15
+        invalidation: 0.15
+        direction-match: 0.10
+        price-position: 0.05
+      risk-thresholds:
+        high-risk-max: 0.4
+        medium-risk-max: 0.7
+        low-risk-min: 0.7
+      price-position:
+        channel-upper-threshold: 80
+        channel-lower-threshold: 20
+        min-risk-reward-ratio: 1.5
+        warning-risk-reward-ratio: 1.0
+      multi-timeframe:
+        enabled: false
+        weights:
+          hourly: 0.5
+          quarterly: 0.3
+          minute: 0.2
+        min-agreement: 0.6
+      scenario-selection:
+        prioritize-current-phase: true
+        min-confidence-difference: 5.0
+        direction-weight: 0.6
+        phase-weight: 0.4
+
+strategy:
+  mode: BIDIRECTIONAL
+  bollinger-rsi:
+    use-risk-module: true
+    risk-module-evaluators: macd
+
+telegram:
+  bot:
+    token: "123456789:ABCDEF1234567890abcdef"
+  chat:
+    id: -123456789
+
+# K线Redis缓存：实盘开启缓存最近1200条K线，减少数据库压力
+kline:
+  redis-cache:
+    enabled: true
+
+logging:
+  level:
+    com.chain.ai.trade.engine.mapper: info
+    com.chain.ai.trade.engine.data.service: info
+    com.baomidou.mybatisplus: warn
+    org.apache.ibatis: warn
+    java.sql: warn
+    java.sql.Connection: warn
+    java.sql.Statement: warn
+    java.sql.PreparedStatement: warn
+
+trading:
+  bidirectional:
+    mode: HEDGED
+
+    direction-selector:
+      type: CUSTOM
+      trend-based:
+        ema-period: 20
+      rsi-based:
+        rsi-period: 14
+        oversold-threshold: 30
+        overbought-threshold: 70
+
+    risk-management:
+      max-position-size: 1.0
+      allow-hedging: true
+      transaction-cost-model: ZERO
+      holding-cost-model: ZERO
+
+csv:
+  name: crypto_dataset.csv
+
+xxl:
+  job:
+    admin:
+      addresses: http://localhost:9002/xxl-job-admin
+    executor:
+      appname: ai-quant-executor
+      address:
+      ip:
+      port: 9999
+      logpath: ../vdr-log/xxl-job/executor
+      logretentiondays: 7
+    accessToken: ai-quant-token
+live-advice:
+  scheduled:
+    enabled: true
+    symbols:
+      - symbol: BTC-USDT-SWAP
+        accountId: "2020163742895513602"
+        interval: 3m
+      - symbol: ETH-USDT-SWAP
+        accountId: "2020163742895513602"
+        interval: 3m
+
+openclaw:
+  bridge:
+    token: "oc-bridge-123456"
+wallet:
+  encrypt:
+    key: D6Jyq/32XaVNMdVmzIezkgRVcmRAlhvk3ieBj2/miRw=
+
+# 信号SMC展示明细开关：本地测试开启用于核对数据，生产关闭以省性能
+signal:
+  smc:
+    detail-enabled: false

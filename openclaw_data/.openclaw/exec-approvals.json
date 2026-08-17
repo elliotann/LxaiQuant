@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "socket": {
+    "path": "F:\\project\\lenzeto\\openclaw_data/.openclaw/exec-approvals.sock",
+    "token": "2TJGQJBGfIobIBRHe-_jmTlD17J83f5n"
+  },
+  "defaults": {},
+  "agents": {}
+}

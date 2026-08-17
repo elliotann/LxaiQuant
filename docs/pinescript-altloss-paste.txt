@@ -1,0 +1,44 @@
+=== 在「3. 冷却期自动解除」之前插入以下整段（2.5 连续同向恢复）===
+
+找到这段：
+    // 3. 冷却期自动解除（备用）
+    if useCoolingPeriod and protectionActive
+
+在它**正上方**插入：
+
+    // 2.5 连续同向恢复：满足「连续同向笔数」且（可选）最近一笔盈利则解除保护
+    if useAltLossProtection and protectionActive
+        needProfit = requireProfitForRecovery and array.size(tradeResults) > 0
+        lastResult = safeArrayGetFloat(tradeResults, 0)
+        profitOk = not needProfit or (not na(lastResult) and lastResult > 0)
+        if consecutiveSameDirection >= sameDirectionRecovery and profitOk
+            protectionActive := false
+
+---
+
+=== 可选：加固 isAlternatingLoss 中的空值判断 ===
+
+将 isAlternatingLoss() 里「检查是否都亏损」的循环改为：
+
+        for i = 0 to checkCount - 1
+            result = safeArrayGetFloat(tradeResults, i)
+            if not na(result) and result > 0
+                allLossResult := false
+                break
+
+（保证只有明确 result > 0 才不算亏损，避免 na 影响判断。）
+
+---
+
+=== 可选：调试减仓是否生效 ===
+
+在 calculatePositionSize(entryPrice) 函数内，在「如果智能亏损保护激活，调整金额/比例」之后加一行：
+
+        if useAltLossProtection and protectionActive
+            actualAmount := fixedAmount * (reducePositionPercent / 100.0)
+            actualPercent := positionPercent * (reducePositionPercent / 100.0)
+            // 调试：最后一根K线显示减仓（确认保护生效后可删）
+            if barstate.islast
+                label.new(bar_index, high, "🔴减仓" + str.tostring(reducePositionPercent) + "%", color=color.orange, size=size.small)
+
+这样回测时若保护激活，图表右上会短暂出现「减仓xx%」，便于确认逻辑是否走到。

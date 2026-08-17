@@ -1,0 +1,1484 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<!-- Primary SEO -->
+<title data-i18n="meta.title">QuantDinger — Self-hosted AI Quant Trading Platform with MCP for Cursor, Claude Code &amp; Codex</title>
+<meta name="description" data-i18n-attr="content" data-i18n="meta.desc" content="QuantDinger v5.0.1 — a self-hosted AI Trading OS with Strategy API V2, durable trading and scheduler workers, Celery jobs, observability, and 25 MCP tools for Cursor, Claude Code and Codex." />
+<meta name="keywords" data-i18n-attr="content" data-i18n="meta.keywords" content="QuantDinger, AI Trading OS, Strategy API V2, durable trading worker, Celery, MCP server, quantdinger-mcp 0.4.0, Cursor MCP, self-hosted trading, IBKR, Alpaca, Agent Gateway" />
+<meta name="author" content="QuantDinger" />
+<meta name="publisher" content="OpenByte Inc" />
+<meta name="application-name" content="QuantDinger" />
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+<meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large" />
+<meta name="theme-color" content="#0a0b14" />
+<meta name="format-detection" content="telephone=no" />
+<link rel="canonical" href="https://quantdinger.com/" />
+
+<!-- Open Graph -->
+<meta property="og:title" content="QuantDinger — Self-hosted AI Quant Trading Platform with MCP for Cursor, Claude Code &amp; Codex" />
+<meta property="og:description" content="Self-hosted AI quant stack — Python strategies, deterministic backtesting, live execution. Plug Cursor, Claude Code &amp; Codex in via the published MCP server (uvx quantdinger-mcp)." />
+<meta property="og:site_name" content="QuantDinger" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://quantdinger.com/" />
+<meta property="og:image" content="https://quantdinger.com/assets/logo.jpg" />
+<meta property="og:image:secure_url" content="https://quantdinger.com/assets/logo.jpg" />
+<meta property="og:image:type" content="image/jpeg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="1200" />
+<meta property="og:image:alt" content="QuantDinger — Self-hosted AI quant operating system" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:locale:alternate" content="zh_CN" />
+<meta property="og:locale:alternate" content="zh_TW" />
+<meta property="og:locale:alternate" content="ja_JP" />
+<meta property="og:locale:alternate" content="ko_KR" />
+<meta property="og:locale:alternate" content="vi_VN" />
+<meta property="og:locale:alternate" content="th_TH" />
+<meta property="og:locale:alternate" content="fr_FR" />
+<meta property="og:locale:alternate" content="de_DE" />
+<meta property="og:locale:alternate" content="ar_SA" />
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content="@quantdinger" />
+<meta name="twitter:creator" content="@quantdinger" />
+<meta name="twitter:title" content="QuantDinger — Self-hosted AI Quant Trading Platform · MCP for Cursor / Claude Code / Codex" />
+<meta name="twitter:description" content="Strategy API V2, durable workers, live execution across six crypto venues plus IBKR/Alpaca, and 25 MCP tools for AI agents." />
+<meta name="twitter:image" content="https://quantdinger.com/assets/logo.jpg" />
+<meta name="twitter:image:alt" content="QuantDinger — Self-hosted AI quant operating system" />
+
+<!-- Search engine verification (placeholders — replace with real tokens when issued) -->
+<!-- <meta name="google-site-verification" content="" /> -->
+<!-- <meta name="msvalidate.01" content="" /> -->
+<!-- <meta name="baidu-site-verification" content="" /> -->
+
+<!-- Favicons / mobile -->
+<link rel="icon" type="image/jpeg" href="assets/logo.jpg" />
+<link rel="apple-touch-icon" href="assets/logo.jpg" />
+<meta name="apple-mobile-web-app-title" content="QuantDinger" />
+
+<!-- Preconnect / fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="css/styles.css" />
+
+<!-- Structured data: WebApplication, Organization, WebSite, FAQ, Breadcrumb -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://quantdinger.com/#org",
+      "name": "OpenByte Inc",
+      "alternateName": "QuantDinger",
+      "url": "https://quantdinger.com/",
+      "logo": "https://quantdinger.com/assets/logo.jpg",
+      "email": "support@quantdinger.com",
+      "sameAs": [
+        "https://github.com/brokermr810/QuantDinger",
+        "https://t.me/quantdinger",
+        "https://discord.com/invite/tyx5B6TChr",
+        "https://youtube.com/@quantdinger",
+        "https://pypi.org/project/quantdinger-mcp/"
+      ]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://quantdinger.com/#website",
+      "url": "https://quantdinger.com/",
+      "name": "QuantDinger",
+      "publisher": { "@id": "https://quantdinger.com/#org" },
+      "inLanguage": ["en", "zh-CN", "zh-TW", "ja", "ko", "vi", "th", "fr", "de", "ar"],
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://github.com/brokermr810/QuantDinger/search?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@type": "WebApplication",
+      "@id": "https://quantdinger.com/#app",
+      "name": "QuantDinger",
+      "url": "https://ai.quantdinger.com/",
+      "applicationCategory": "FinanceApplication",
+      "applicationSubCategory": "Trading",
+      "operatingSystem": "Web, Linux, macOS, Windows, Android",
+      "softwareVersion": "5.0.1",
+      "description": "Open-source, self-hosted AI Trading OS with Strategy API V2, deterministic backtesting, durable strategy workers, live execution, observability, an Agent Gateway, and quantdinger-mcp 0.4.0 on PyPI.",
+      "image": "https://quantdinger.com/assets/logo.jpg",
+      "publisher": { "@id": "https://quantdinger.com/#org" },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock"
+      },
+      "license": "https://www.apache.org/licenses/LICENSE-2.0",
+      "downloadUrl": "https://github.com/brokermr810/QuantDinger",
+      "featureList": [
+        "AI market analysis (OpenAI, Claude, Gemini, DeepSeek, Grok)",
+        "Python-native Strategy API V2 with compiled manifests",
+        "Backtesting and live execution on one strategy contract",
+        "Autonomous trading bots: Grid, Martingale, Trend Following, DCA",
+        "Live crypto execution on Binance, OKX, Bitget, Bybit, Gate and HTX, plus IBKR and Alpaca workflows",
+        "Chart indicator library and MCP indicator workspace (quantdinger-mcp 0.4.0)",
+        "Self-hosted via Docker Compose with separate API, trading, scheduler, Celery and migration roles",
+        "PostgreSQL-backed commands, renewable leases, heartbeats and fencing tokens",
+        "Separate cache Redis and durable Celery job Redis",
+        "Optional Prometheus, Grafana and Alertmanager observability overlay",
+        "Agent Gateway with scoped tokens, audit log, rate limiting and idempotency",
+        "Published MCP server with stdio, SSE and streamable-http transports",
+        "Server-Sent Events for streaming long-running job progress to AI agents"
+      ],
+      "keywords": "AI Trading OS, self-hosted trading platform, Strategy API V2, MCP server, quantdinger-mcp 0.4.0, Cursor MCP, Python trading, backtesting, durable workers, IBKR, Alpaca"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home",          "item": "https://quantdinger.com/" },
+        { "@type": "ListItem", "position": 2, "name": "AI Agents",     "item": "https://quantdinger.com/#agents" },
+        { "@type": "ListItem", "position": 3, "name": "Architecture",  "item": "https://quantdinger.com/#architecture" },
+        { "@type": "ListItem", "position": 4, "name": "Documentation", "item": "https://quantdinger.com/doc/" }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is QuantDinger really self-hosted?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. The default deployment is your own Docker Compose stack with PostgreSQL, separate cache and job Redis services, isolated backend process roles, credentials, and environment under your control."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do you store my exchange API keys?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Broker credentials and MFA secrets are encrypted with a stable, operator-controlled CREDENTIAL_ENCRYPTION_KEY. They are decrypted only in memory for authorized operations and should never appear in logs."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I write my own strategies and indicators?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Absolutely. Executable strategies use Strategy API V2: initialize(context) declares the universe and subscriptions, while handle_data, on_rebalance, or scheduled callbacks emit auditable order intents. The same compiled manifest drives backtests and live deployments."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which venues are supported for live trading?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The canonical v5 live-crypto matrix covers Binance, OKX, Bitget, Bybit, Gate and HTX for spot and perpetual workflows. Traditional-broker workflows include IBKR and Alpaca."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is it free?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The backend is Apache 2.0. The prebuilt frontend is source-available under a separate license that allows personal and qualified non-commercial use for free; commercial deployment requires a license."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What languages is the app available in?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The app is fully localized across 10 languages — English, Simplified and Traditional Chinese, Japanese, Korean, Vietnamese, Thai, French, German and Arabic."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I plug Cursor, Claude Code or Codex directly into QuantDinger?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. v5.0.1 ships quantdinger-mcp 0.4.0 on PyPI with 25 tenant-scoped tools for market data, Strategy API V2, indicators, backtests, runtime state and explicit quick orders. Install with uvx quantdinger-mcp and configure your MCP client."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Hosted (ai.quantdinger.com) or self-host — which one fits me?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Hosted is best when you want to try QuantDinger from an AI agent in 30 seconds, don't have private exchange keys to plug in, and are fine with paper-only execution. The multi-tenant instance pins paper_only=true and rejects T-scope at issuance, so no agent on the hosted endpoint can route real-money orders. Self-host is the right call when you have your own exchange API keys, private strategies and data, run behind a VPN, or eventually want live execution. Both paths use identical MCP wiring; only QUANTDINGER_BASE_URL changes."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<!-- Background aurora -->
+<div class="aurora" aria-hidden="true">
+  <div class="aurora__blob aurora__blob--1"></div>
+  <div class="aurora__blob aurora__blob--2"></div>
+  <div class="aurora__blob aurora__blob--3"></div>
+  <div class="aurora__grid"></div>
+</div>
+
+<!-- ============ NAV ============ -->
+<header class="nav" id="nav">
+  <div class="container nav__inner">
+    <a class="brand" href="#top" aria-label="QuantDinger home">
+      <span class="brand__mark">
+        <img src="assets/logo.jpg" alt="QuantDinger" />
+      </span>
+      <span class="brand__name">QuantDinger</span>
+    </a>
+
+    <nav class="nav__links" aria-label="Primary">
+      <a href="#features"     data-i18n="nav.features">Features</a>
+      <a href="#agents"       data-i18n="nav.agents" title="AI Agents">Agents</a>
+      <a href="#markets"      data-i18n="nav.markets">Markets</a>
+      <a href="#mobile"       data-i18n="nav.mobile" title="Mobile App">Mobile</a>
+      <a href="doc/"          data-docs-link data-i18n="nav.docs">Docs</a>
+      <a href="#faq"          data-i18n="nav.faq">FAQ</a>
+      <a href="#license"      data-i18n="nav.license" title="Commercial License">License</a>
+      <a href="https://github.com/brokermr810/QuantDinger" target="_blank" rel="noopener" data-i18n="nav.github">GitHub</a>
+    </nav>
+
+    <div class="nav__cta">
+      <div class="lang" id="lang">
+        <button class="lang__btn" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="Language">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <span class="lang__label" id="langLabel">EN</span>
+          <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <ul class="lang__menu" role="listbox" aria-label="Language">
+          <li role="option" data-lang="en-US"><span>EN</span>English</li>
+          <li role="option" data-lang="zh-CN"><span>中</span>简体中文</li>
+          <li role="option" data-lang="zh-TW"><span>繁</span>繁體中文</li>
+          <li role="option" data-lang="ja-JP"><span>日</span>日本語</li>
+          <li role="option" data-lang="ko-KR"><span>한</span>한국어</li>
+          <li role="option" data-lang="vi-VN"><span>VI</span>Tiếng Việt</li>
+          <li role="option" data-lang="th-TH"><span>TH</span>ไทย</li>
+          <li role="option" data-lang="fr-FR"><span>FR</span>Français</li>
+          <li role="option" data-lang="de-DE"><span>DE</span>Deutsch</li>
+          <li role="option" data-lang="ar-SA"><span>AR</span>العربية</li>
+        </ul>
+      </div>
+
+      <a class="btn btn--app nav__app" href="#mobile" aria-label="Get the mobile app">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+        <span data-i18n="nav.getApp">Get App</span>
+        <span class="nav__app-badge" data-i18n="nav.new">NEW</span>
+      </a>
+      <a class="btn btn--ghost nav__login" href="https://ai.quantdinger.com" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        <span data-i18n="nav.login">Login</span>
+      </a>
+      <button class="nav__burger" id="burger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile drawer -->
+  <div class="drawer" id="drawer" aria-hidden="true">
+    <a href="#features"     data-i18n="nav.features">Features</a>
+    <a href="#audience"     data-i18n="nav.audience">Who it's for</a>
+    <a href="#agents"       data-i18n="nav.agents">AI Agents</a>
+    <a href="#markets"      data-i18n="nav.markets">Markets</a>
+    <a href="#mobile"       data-i18n="nav.mobile">Mobile App</a>
+    <a href="doc/"          data-docs-link data-i18n="nav.docs">Docs</a>
+    <a href="#workflow"     data-i18n="nav.workflow">How it works</a>
+    <a href="#architecture" data-i18n="nav.architecture">Architecture</a>
+    <a href="#faq"          data-i18n="nav.faq">FAQ</a>
+    <a href="#license"      data-i18n="nav.license">Commercial License</a>
+    <a href="https://github.com/brokermr810/QuantDinger" target="_blank" rel="noopener" data-i18n="nav.github">GitHub</a>
+    <a class="btn btn--primary" href="https://m.quantdinger.com" target="_blank" rel="noopener">
+      <span data-i18n="mobile.web.cta">Open m.quantdinger.com</span>&nbsp;→
+    </a>
+    <a class="btn btn--ghost" href="https://www.quantdinger.com/download/app.apk">
+      <span data-i18n="mobile.apk.cta">Download APK</span>
+    </a>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="container">
+    <div class="hero__pill reveal">
+      <span class="dot"></span>
+      <span data-i18n="hero.pill">Self-hosted · Durable workers · AI agent ready — v5.0.1 released</span>
+    </div>
+
+    <h1 class="hero__title reveal">
+      <span data-i18n="hero.titlePre">Your private</span>
+      <span class="grad" data-i18n="hero.titleGrad">AI quant</span>
+      <span data-i18n="hero.titlePost">operating system.</span>
+    </h1>
+
+    <p class="hero__sub reveal" data-i18n="hero.sub">
+      Research markets, generate Python strategies, backtest ideas, and run
+      live trading workflows — on infrastructure you fully control. One stack
+      for AI analysis, charting, strategy code, backtests, quick trade, and
+      live operations.
+    </p>
+
+    <div class="hero__ctas reveal">
+      <a class="btn btn--primary btn--lg" href="https://ai.quantdinger.com" target="_blank" rel="noopener">
+        <span data-i18n="hero.cta.launch">Launch App</span>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+      <a class="btn btn--ghost btn--lg" href="https://github.com/brokermr810/QuantDinger" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.57.1.78-.25.78-.55v-2.1c-3.2.7-3.87-1.38-3.87-1.38-.52-1.33-1.27-1.68-1.27-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.25 3.34.95.1-.74.4-1.25.72-1.54-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.47.11-3.06 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.64 1.59.23 2.77.12 3.06.74.81 1.19 1.84 1.19 3.1 0 4.43-2.69 5.41-5.25 5.69.41.36.78 1.07.78 2.16v3.2c0 .3.2.66.79.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
+        <span data-i18n="hero.cta.github">Star on GitHub</span>
+      </a>
+    </div>
+
+    <!-- Hero mobile promo strip -->
+    <div class="hero__mobile reveal" role="group" aria-label="Mobile app">
+      <div class="hero__mobile-left">
+        <span class="hero__mobile-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2.5"/><line x1="10" y1="18" x2="14" y2="18"/></svg>
+        </span>
+        <div class="hero__mobile-text">
+          <strong data-i18n="hero.mobile.title">Now on mobile</strong>
+          <span data-i18n="hero.mobile.sub">Use the mobile web app, or install the native Android build.</span>
+        </div>
+      </div>
+      <div class="hero__mobile-ctas">
+        <a class="btn btn--primary hero__mobile-btn" href="https://m.quantdinger.com" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          <span data-i18n="hero.mobile.web">Open Mobile Web</span>
+        </a>
+        <a class="btn btn--ghost hero__mobile-btn" href="https://www.quantdinger.com/download/app.apk">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span data-i18n="hero.mobile.apk">Download APK</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Product mock -->
+    <div class="hero__mock reveal">
+      <div class="mock">
+        <div class="mock__chrome">
+          <span></span><span></span><span></span>
+          <div class="mock__url">ai.quantdinger.com / dashboard</div>
+        </div>
+        <div class="mock__body">
+          <div class="mock__side">
+            <div class="mock__logo">
+              <img src="assets/logo.jpg" alt="QD" />
+              <span>QuantDinger</span>
+            </div>
+            <div class="mock__navi">
+              <div class="mock__navi-item active">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                Dashboard
+              </div>
+              <div class="mock__navi-item"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Trading Bots</div>
+              <div class="mock__navi-item"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>AI Analysis</div>
+              <div class="mock__navi-item"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>Backtest</div>
+              <div class="mock__navi-item"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7L9 18l-5-5"/></svg>Portfolio</div>
+              <div class="mock__navi-item"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</div>
+            </div>
+          </div>
+          <div class="mock__main">
+            <div class="mock__stats">
+              <div class="mock__stat">
+                <span class="mock__stat-label">Equity</span>
+                <span class="mock__stat-val">$ 48,231.05</span>
+                <span class="mock__stat-chg up">+ 3.42%</span>
+              </div>
+              <div class="mock__stat">
+                <span class="mock__stat-label">24h PnL</span>
+                <span class="mock__stat-val">+ $ 1,605.22</span>
+                <span class="mock__stat-chg up">+ 3.44%</span>
+              </div>
+              <div class="mock__stat">
+                <span class="mock__stat-label">Win rate</span>
+                <span class="mock__stat-val">64.8%</span>
+                <span class="mock__stat-chg neutral">30d</span>
+              </div>
+              <div class="mock__stat">
+                <span class="mock__stat-label">Active bots</span>
+                <span class="mock__stat-val">12</span>
+                <span class="mock__stat-chg up">+ 2 today</span>
+              </div>
+            </div>
+
+            <div class="mock__chart">
+              <svg viewBox="0 0 700 240" preserveAspectRatio="none" aria-hidden="true">
+                <defs>
+                  <linearGradient id="chartG" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.45"/>
+                    <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
+                  </linearGradient>
+                  <linearGradient id="chartL" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stop-color="#7c5cff"/>
+                    <stop offset="100%" stop-color="#22d3ee"/>
+                  </linearGradient>
+                </defs>
+                <g opacity="0.08" stroke="#ffffff" stroke-width="1">
+                  <line x1="0" y1="60"  x2="700" y2="60"/>
+                  <line x1="0" y1="120" x2="700" y2="120"/>
+                  <line x1="0" y1="180" x2="700" y2="180"/>
+                </g>
+                <path d="M0,180 C40,170 70,190 110,150 C160,110 200,160 240,130 C290,95 330,140 370,100 C420,60 470,110 510,85 C560,55 600,95 640,60 C660,50 680,55 700,40 L700,240 L0,240 Z" fill="url(#chartG)"/>
+                <path d="M0,180 C40,170 70,190 110,150 C160,110 200,160 240,130 C290,95 330,140 370,100 C420,60 470,110 510,85 C560,55 600,95 640,60 C660,50 680,55 700,40" fill="none" stroke="url(#chartL)" stroke-width="2.5" stroke-linecap="round"/>
+                <circle cx="700" cy="40" r="4" fill="#22d3ee"/>
+                <circle cx="700" cy="40" r="8" fill="#22d3ee" opacity="0.25"/>
+              </svg>
+            </div>
+
+            <div class="mock__list">
+              <div class="mock__row header">
+                <span>Strategy</span><span>Market</span><span>Mode</span><span>PnL</span><span>Status</span>
+              </div>
+              <div class="mock__row">
+                <span><span class="tag">Grid</span> ETH/USDT — Neutral</span>
+                <span>Crypto · Swap</span><span>Live</span>
+                <span class="up">+ 842.10</span>
+                <span class="pulse">● running</span>
+              </div>
+              <div class="mock__row">
+                <span><span class="tag tag--alt">DCA</span> BTC/USDT — Accum.</span>
+                <span>Crypto · Spot</span><span>Signal</span>
+                <span class="up">+ 312.66</span>
+                <span class="pulse">● running</span>
+              </div>
+              <div class="mock__row">
+                <span><span class="tag tag--warn">Martingale</span> SOL/USDT</span>
+                <span>Crypto · Swap</span><span>Live</span>
+                <span class="down">− 58.40</span>
+                <span class="pulse">● running</span>
+              </div>
+              <div class="mock__row">
+                <span><span class="tag tag--ok">Trend</span> AAPL</span>
+                <span>US Stocks · IBKR</span><span>Signal</span>
+                <span class="up">+ 206.15</span>
+                <span class="pulse">● running</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STATS ============ -->
+<section class="stats">
+  <div class="container stats__grid">
+    <div class="stats__item reveal">
+      <div class="stats__val" data-i18n="stats.v1">15+</div>
+      <div class="stats__label" data-i18n="stats.l1">Crypto · stocks · forex &amp; more</div>
+    </div>
+    <div class="stats__item reveal">
+      <div class="stats__val">6</div>
+      <div class="stats__label" data-i18n="stats.l2">LLM providers</div>
+    </div>
+    <div class="stats__item reveal">
+      <div class="stats__val">4</div>
+      <div class="stats__label" data-i18n="stats.l3">Built-in bot strategies</div>
+    </div>
+    <div class="stats__item reveal">
+      <div class="stats__val">100%</div>
+      <div class="stats__label" data-i18n="stats.l4">Self-hosted, your data</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FEATURES ============ -->
+<section class="section" id="features">
+  <div class="container">
+    <header class="section__head reveal">
+      <div class="eyebrow" data-i18n="features.eyebrow">Platform</div>
+      <h2 class="section__title" data-i18n="features.title">One stack. Every edge you need.</h2>
+      <p class="section__lead" data-i18n="features.lead">
+        Research to execution in one product — AI analysis, charting,
+        strategy code, backtests, quick trade, and live operations connected
+        from day one.
+      </p>
+    </header>
+
+    <div class="cards">
+      <article class="card reveal">
+        <div class="card__icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15 15 0 010 20"/><path d="M12 2a15 15 0 000 20"/></svg>
+        </div>
+        <h3 data-i18n="f1.title">Fast AI Market Analysis</h3>
+        <p data-i18n="f1.body">Structured, low-latency analysis with memory, ensemble voting, and confidence calibration. Compare views across OpenAI, Claude, Gemini, DeepSeek, Grok and more.</p>
+      </article>
+
+      <article class="card reveal">
+        <div class="card__icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </div>
+        <h3 data-i18n="f2.title">Strategy API V2</h3>
+        <p data-i18n="f2.body">Write one Python strategy contract for backtests and live execution. <code>initialize(context)</code> owns the universe, subscriptions, warmup and benchmark; lifecycle callbacks emit explicit, auditable order intents.</p>
+      </article>
+
+      <article class="card reveal">
+        <div class="card__icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg>
+        </div>
+        <h3 data-i18n="f3.title">Deterministic Backtesting</h3>
+        <p data-i18n="f3.body">Server-side backtests share the Strategy API V2 manifest, time semantics, sizing, risk controls and order intent model used by live deployments. Every run retains its code and configuration snapshot.</p>
+      </article>
+
+      <article class="card reveal">
+        <div class="card__icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        </div>
+        <h3 data-i18n="f4.title">Autonomous Trading Bots</h3>
+        <p data-i18n="f4.body">Grid, Martingale, Trend Following and DCA out of the box. Execution-aware, restart-resilient, with signal or fully-live execution modes.</p>
+      </article>
+
+      <article class="card reveal">
+        <div class="card__icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="12" cy="12" r="4"/><path d="M7 8h.01M17 8h.01"/></svg>
+        </div>
+        <h3 data-i18n="f5.title">Self-Hosted by Design</h3>
+        <p data-i18n="f5.body">One Docker Compose stack brings up separate API, trading, scheduler, Celery and migration roles. Your keys, strategies, AI history and trades remain on infrastructure you control.</p>
+      </article>
+
+      <article class="card reveal">
+        <div class="card__icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+        <h3 data-i18n="f6.title">Operator-Ready</h3>
+        <p data-i18n="f6.body">PostgreSQL commands, renewable leases, heartbeats and fencing tokens protect durable execution. Optional Prometheus, Grafana and Alertmanager add production visibility.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ AUDIENCE ============ -->
+<section class="section section--tight" id="audience">
+  <div class="container">
+    <header class="section__head reveal">
+      <div class="eyebrow" data-i18n="aud.eyebrow">Who it's for</div>
+      <h2 class="section__title" data-i18n="aud.title">Built for everyone running real strategies.</h2>
+      <p class="section__lead" data-i18n="aud.lead">
+        Whether you trade solo, run a quant team, build a product, or operate
+        a fund — QuantDinger is shaped for the way you actually work.
+      </p>
+    </header>
+
+    <div class="personas">
+      <article class="persona reveal">
+        <div class="persona__icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+        </div>
+        <h3 data-i18n="p1.t">AI-assisted individual traders</h3>
+        <p data-i18n="p1.b">Solo traders and quant enthusiasts who want AI, charting, backtests and bots in one workspace — instead of juggling 5 tools.</p>
+      </article>
+
+      <article class="persona reveal">
+        <div class="persona__icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <h3 data-i18n="p2.t">Quant research teams</h3>
+        <p data-i18n="p2.b">Teams that want a unified toolchain — data ingestion, strategy code, backtests, live execution, and a shared history of experiments.</p>
+      </article>
+
+      <article class="persona reveal">
+        <div class="persona__icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </div>
+        <h3 data-i18n="p3.t">Python strategy developers</h3>
+        <p data-i18n="p3.b">Developers who want a fast path from Python idea → backtest → live execution, with a documented SDK and clear extension points.</p>
+      </article>
+
+      <article class="persona reveal">
+        <div class="persona__icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <h3 data-i18n="p4.t">Privacy-first teams</h3>
+        <p data-i18n="p4.b">Research desks and operators that cannot send keys, alpha, or trading history to a hosted SaaS. Everything stays inside your infra.</p>
+      </article>
+
+      <article class="persona reveal">
+        <div class="persona__icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <h3 data-i18n="p5.t">Fintech &amp; AI-trading startups</h3>
+        <p data-i18n="p5.b">Founders who need users, billing, credits, OAuth and payments in the stack from day one — not months of re-building plumbing.</p>
+      </article>
+
+      <article class="persona reveal">
+        <div class="persona__icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V10l7-5 7 5v11"/><path d="M9 21v-6h6v6"/></svg>
+        </div>
+        <h3 data-i18n="p6.t">Asset management firms</h3>
+        <p data-i18n="p6.b">Internal desks wanting one integrated platform for research, strategy code, execution, alerts, and operator-side admin controls.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ USE CASES ============ -->
+<section class="section section--tight" id="usecases">
+  <div class="container">
+    <header class="section__head reveal">
+      <div class="eyebrow" data-i18n="uc.eyebrow">Use cases</div>
+      <h2 class="section__title" data-i18n="uc.title">One platform, many operating models.</h2>
+      <p class="section__lead" data-i18n="uc.lead">
+        The same deployable stack adapts to an internal research lab, a live
+        strategy incubator, a customer-facing product, or a classroom.
+      </p>
+    </header>
+
+    <div class="usecases">
+      <article class="usecase reveal">
+        <div class="usecase__num">01</div>
+        <h3 data-i18n="u1.t">Internal research &amp; backtest lab</h3>
+        <p data-i18n="u1.b">Stand up a private quant research and backtesting platform for your team — reproducible runs, shared strategy library, saved snapshots.</p>
+      </article>
+
+      <article class="usecase reveal">
+        <div class="usecase__num">02</div>
+        <h3 data-i18n="u2.t">AI trading assistant products</h3>
+        <p data-i18n="u2.b">Build consumer or pro-grade AI trading assistants on top of ensemble analysis, calibration, and memory — with a working UI out of the box.</p>
+      </article>
+
+      <article class="usecase reveal">
+        <div class="usecase__num">03</div>
+        <h3 data-i18n="u3.t">Strategy incubation &amp; live validation</h3>
+        <p data-i18n="u3.b">Run a strategy incubator end-to-end: ideation, Python code, backtest, paper trade, then graduate to live with small size.</p>
+      </article>
+
+      <article class="usecase reveal">
+        <div class="usecase__num">04</div>
+        <h3 data-i18n="u4.t">Paid signals &amp; strategy service</h3>
+        <p data-i18n="u4.b">Offer member-based trading signals or strategy subscriptions with built-in memberships, credits, and USDT TRC20 payments.</p>
+      </article>
+
+      <article class="usecase reveal">
+        <div class="usecase__num">05</div>
+        <h3 data-i18n="u5.t">Quant education &amp; training</h3>
+        <p data-i18n="u5.b">Ship a hands-on learning environment for quant finance classes and bootcamps — real Python strategies, real charts, safe paper trading.</p>
+      </article>
+
+      <article class="usecase reveal">
+        <div class="usecase__num">06</div>
+        <h3 data-i18n="u6.t">Internal ops for asset managers</h3>
+        <p data-i18n="u6.b">Run a private operations console for a fund or family office: portfolio monitors, alerts, multi-user roles, and audit-friendly history.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ AI AGENTS (MCP · v5.0.1) ============ -->
+<section class="section section--tight" id="agents">
+  <div class="container">
+    <header class="section__head reveal">
+      <div class="eyebrow"><span class="badge-new" data-i18n="agents.new">MCP · v5.0.1</span> <span data-i18n="agents.eyebrow">For AI agents</span></div>
+      <h2 class="section__title" data-i18n="agents.title">Plug Cursor, Claude Code &amp; Codex straight into your quant stack.</h2>
+      <p class="section__lead" data-i18n="agents.lead">
+        QuantDinger ships a first-class Agent Gateway and quantdinger-mcp 0.4.0.
+        Its 25 tenant-scoped tools cover market data, Strategy API V2, chart
+        indicators, asynchronous backtests, runtime visibility and explicit
+        quick orders without exposing broker credentials or administrator JWTs.
+      </p>
+    </header>
+
+    <div class="cards">
+      <article class="card reveal">
+        <div class="card__icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </div>
+        <h3 data-i18n="ag1.title">One-line MCP install</h3>
+        <p data-i18n="ag1.body">Published on PyPI as <code>quantdinger-mcp</code> <strong>0.4.0</strong> with 25 curated tools. Use <code>stdio</code> locally or <code>sse</code> / <code>streamable-http</code> for network clients.</p>
+        <pre class="code-snippet" aria-label="Install command"><code>uvx quantdinger-mcp
+# PyPI: quantdinger-mcp==0.4.0</code></pre>
+      </article>
+
+      <article class="card reveal">
+        <div class="card__icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <h3 data-i18n="ag2.title">Four capability scopes, least privilege</h3>
+        <p data-i18n="ag2.body">Issue a token with only <strong>R</strong>ead, <strong>W</strong>rite, <strong>B</strong>acktest or <strong>T</strong>rade access. Market and instrument allowlists, expiry, rate limits, paper-only restrictions, idempotency and audit logs remain server-enforced.</p>
+        <div class="agents-scopes" aria-hidden="true">
+          <span class="scope-pill">R · Read</span>
+          <span class="scope-pill">W · Write</span>
+          <span class="scope-pill">B · Backtest</span>
+          <span class="scope-pill scope-pill--guarded">T · Trading</span>
+        </div>
+      </article>
+
+      <article class="card reveal">
+        <div class="card__icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0z"/><path d="M3 12h18"/><path d="M12 3a13 13 0 0 1 0 18"/><path d="M12 3a13 13 0 0 0 0 18"/></svg>
+        </div>
+        <h3 data-i18n="ag3.title">Two paths: hosted SaaS or self-host</h3>
+        <p data-i18n="ag3.body"><strong>Path A · Hosted</strong> — sign up at <a href="https://ai.quantdinger.com" target="_blank" rel="noopener">ai.quantdinger.com</a>, paper-only by design, T-scope rejected at issuance. Try in 30 seconds. <strong>Path B · Self-host</strong> — clone, <code>docker compose up</code>, you own scopes, exchange keys, and the live-trading kill switch. Same MCP wiring; only <code>QUANTDINGER_BASE_URL</code> changes.</p>
+      </article>
+    </div>
+
+    <!-- Trust strip: streaming + audit + safety -->
+    <div class="agents-strip reveal">
+      <div class="agents-strip__item">
+        <span class="agents-strip__ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 12 9 12 12 4 15 20 18 12 21 12"/></svg>
+        </span>
+        <strong data-i18n="agents.strip.stream.t">Live SSE progress</strong>
+        <span data-i18n="agents.strip.stream.b">Agents stream <code>snapshot → progress → result</code> on long backtests — no blind polling.</span>
+      </div>
+      <div class="agents-strip__item">
+        <span class="agents-strip__ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.5 9.5 8 11 4.5-1.5 8-6 8-11V5l-8-3z"/><path d="m9 12 2 2 4-4"/></svg>
+        </span>
+        <strong data-i18n="agents.strip.safe.t">Safe by default</strong>
+        <span data-i18n="agents.strip.safe.b">All agent trading is paper-only until the operator flips <code>AGENT_LIVE_TRADING_ENABLED</code>; hosted SaaS pins it shut.</span>
+      </div>
+      <div class="agents-strip__item">
+        <span class="agents-strip__ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+        </span>
+        <strong data-i18n="agents.strip.audit.t">Immutable audit</strong>
+        <span data-i18n="agents.strip.audit.b">Every agent request is logged with token, scope, route, status &amp; latency — viewable from the admin panel.</span>
+      </div>
+    </div>
+
+    <div class="agents-cta reveal">
+      <a class="btn btn--primary" href="doc/agent/MCP_SETUP.html">
+        <span data-i18n="agents.cta.docs">Read the integration guide</span>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+      <a class="btn btn--ghost" href="https://pypi.org/project/quantdinger-mcp/" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        <span data-i18n="agents.cta.pypi">View on PyPI (0.4.0)</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MARKETS ============ -->
+<section class="section section--tight" id="markets">
+  <div class="container">
+    <header class="section__head reveal">
+      <div class="eyebrow" data-i18n="markets.eyebrow">Coverage</div>
+      <h2 class="section__title" data-i18n="markets.title">Every venue worth trading.</h2>
+      <p class="section__lead" data-i18n="markets.lead">
+        Live crypto execution across Binance, OKX, Bitget, Bybit, Gate and HTX,
+        plus IBKR and Alpaca workflows — unified under one operating model.
+      </p>
+    </header>
+
+    <div class="markets">
+      <div class="market reveal"><span class="market__sym">₿</span><div><b data-i18n="m1.t">Crypto Exchanges</b><small data-i18n="m1.s">Binance · OKX · Bybit · Bitget · Gate · HTX …</small></div></div>
+      <div class="market reveal"><span class="market__sym">$</span><div><b data-i18n="m2.t">US Stocks</b><small data-i18n="m2.s">IBKR · Yahoo · Finnhub</small></div></div>
+      <div class="market reveal"><span class="market__sym">A</span><div><b data-i18n="m3.t">US Equities API</b><small data-i18n="m3.s">Alpaca · paper &amp; live workflows</small></div></div>
+      <div class="market reveal"><span class="market__sym">⬢</span><div><b data-i18n="m4.t">Futures</b><small data-i18n="m4.s">CME · COMEX · CBOT</small></div></div>
+      <div class="market reveal"><span class="market__sym">¥</span><div><b data-i18n="m5.t">CN / HK Stocks</b><small data-i18n="m5.s">SSE · SZSE · HKEX</small></div></div>
+      <div class="market reveal"><span class="market__sym">∑</span><div><b data-i18n="m6.t">Factor library</b><small data-i18n="m6.s">Built-in &amp; custom indicators</small></div></div>
+      <div class="market reveal"><span class="market__sym">↯</span><div><b data-i18n="m7.t">Spot &amp; Derivatives</b><small data-i18n="m7.s">Swap · Perps · Options</small></div></div>
+      <div class="market reveal"><span class="market__sym">◇</span><div><b data-i18n="m8.t">Pluggable feeds</b><small data-i18n="m8.s">Custom REST / WS adapters</small></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MOBILE APP ============ -->
+<section class="section section--tight mobile-sec" id="mobile">
+  <div class="container">
+    <header class="section__head reveal">
+      <div class="eyebrow" data-i18n="mobile.eyebrow">Mobile app</div>
+      <h2 class="section__title" data-i18n="mobile.title">Your quant stack, now in your pocket.</h2>
+      <p class="section__lead" data-i18n="mobile.lead">
+        Open the mobile web app in your browser, or install the native Android
+        build. iOS TestFlight coming soon.
+      </p>
+    </header>
+
+    <div class="mobile-hub reveal">
+      <!-- Phone mockup -->
+      <div class="mobile-hub__phone" aria-hidden="true">
+        <div class="phone">
+          <div class="phone__notch"></div>
+          <div class="phone__screen">
+            <div class="phone__statusbar">
+              <span>9:41</span>
+              <span class="phone__dots">
+                <span></span><span></span><span></span>
+              </span>
+            </div>
+            <div class="phone__header">
+              <div class="phone__logo">
+                <img src="assets/logo.jpg" alt="QD" />
+                <span>QuantDinger</span>
+              </div>
+              <span class="phone__chip">AI</span>
+            </div>
+            <div class="phone__hero">
+              <div class="phone__equity">
+                <span class="phone__eq-label">Total equity</span>
+                <span class="phone__eq-val">$ 48,231.05</span>
+                <span class="phone__eq-chg up">+ 3.42% · 24h</span>
+              </div>
+              <div class="phone__spark">
+                <svg viewBox="0 0 300 80" preserveAspectRatio="none" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="phoneFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.45"/>
+                      <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
+                    </linearGradient>
+                    <linearGradient id="phoneLine" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stop-color="#7c5cff"/>
+                      <stop offset="100%" stop-color="#22d3ee"/>
+                    </linearGradient>
+                  </defs>
+                  <path d="M0,60 C30,55 50,62 80,45 C110,28 140,55 170,35 C200,20 230,40 260,25 C280,16 290,22 300,14 L300,80 L0,80 Z" fill="url(#phoneFill)"/>
+                  <path d="M0,60 C30,55 50,62 80,45 C110,28 140,55 170,35 C200,20 230,40 260,25 C280,16 290,22 300,14" fill="none" stroke="url(#phoneLine)" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+            </div>
+            <div class="phone__list">
+              <div class="phone__row">
+                <span class="phone__tag">Grid</span>
+                <span>ETH/USDT</span>
+                <span class="up">+ 842.10</span>
+              </div>
+              <div class="phone__row">
+                <span class="phone__tag phone__tag--alt">DCA</span>
+                <span>BTC/USDT</span>
+                <span class="up">+ 312.66</span>
+              </div>
+              <div class="phone__row">
+                <span class="phone__tag phone__tag--warn">Martin</span>
+                <span>SOL/USDT</span>
+                <span class="down">− 58.40</span>
+              </div>
+              <div class="phone__row">
+                <span class="phone__tag phone__tag--ok">Trend</span>
+                <span>AAPL</span>
+                <span class="up">+ 206.15</span>
+              </div>
+            </div>
+            <div class="phone__nav">
+              <span class="active">Home</span>
+              <span>Market</span>
+              <span>Bots</span>
+              <span>AI</span>
+              <span>Me</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA panel -->
+      <div class="mobile-hub__panel">
+        <article class="mobile-card mobile-card--web">
+          <div class="mobile-card__top">
+            <div class="mobile-card__icon">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15 15 0 0 1 0 20"/><path d="M12 2a15 15 0 0 0 0 20"/></svg>
+            </div>
+            <div>
+              <h3 data-i18n="mobile.web.t">Mobile Web</h3>
+              <p data-i18n="mobile.web.b">Same full-feature app, optimised for phones. No install — just open and use.</p>
+            </div>
+          </div>
+          <div class="mobile-card__row">
+            <a class="btn btn--primary btn--full" href="https://m.quantdinger.com" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+              <span data-i18n="mobile.web.cta">Open m.quantdinger.com</span>
+            </a>
+            <div class="mobile-card__qr" aria-hidden="true">
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&bgcolor=0b0d1f&color=eef0ff&margin=2&data=https%3A%2F%2Fm.quantdinger.com" alt="QR: m.quantdinger.com" loading="lazy" />
+              <span data-i18n="mobile.scan">Scan with your phone</span>
+            </div>
+          </div>
+          <code class="mobile-card__url">m.quantdinger.com</code>
+        </article>
+
+        <article class="mobile-card mobile-card--apk">
+          <div class="mobile-card__top">
+            <div class="mobile-card__icon mobile-card__icon--green">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18V8a6 6 0 0 1 12 0v10"/><rect x="4" y="17" width="16" height="4" rx="1"/><line x1="9" y1="5" x2="7" y2="2"/><line x1="15" y1="5" x2="17" y2="2"/><circle cx="9" cy="11" r=".6" fill="currentColor"/><circle cx="15" cy="11" r=".6" fill="currentColor"/></svg>
+            </div>
+            <div>
+              <h3 data-i18n="mobile.apk.t">Android APK</h3>
+              <p data-i18n="mobile.apk.b">Native install, splash screen, safe-area &amp; push-ready. Android 7+.</p>
+            </div>
+          </div>
+          <div class="mobile-card__row">
+            <a class="btn btn--primary btn--full mobile-card__download" href="https://www.quantdinger.com/download/app.apk">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span data-i18n="mobile.apk.cta">Download APK</span>
+            </a>
+            <div class="mobile-card__qr" aria-hidden="true">
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&bgcolor=0b0d1f&color=eef0ff&margin=2&data=https%3A%2F%2Fwww.quantdinger.com%2Fdownload%2Fapp.apk" alt="QR: Android APK" loading="lazy" />
+              <span data-i18n="mobile.scan">Scan with your phone</span>
+            </div>
+          </div>
+          <code class="mobile-card__url">www.quantdinger.com/download/app.apk</code>
+          <p class="mobile-card__note" data-i18n="mobile.safety">
+            On Android, you may need to allow "Install from unknown sources" for your browser before installing.
+          </p>
+        </article>
+
+        <article class="mobile-card mobile-card--ios">
+          <div class="mobile-card__top">
+            <div class="mobile-card__icon mobile-card__icon--mute">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8.94-.18 1.85-.87 3.05-.78 1.33.1 2.34.69 3 1.76-2.66 1.71-2.04 5.02.82 6.1-.62 1.67-1.44 3.33-2.95 5.09zM12.03 7.25c-.13-2.04 1.54-3.75 3.5-3.93.25 2.27-1.94 4.03-3.5 3.93z"/></svg>
+            </div>
+            <div>
+              <h3 data-i18n="mobile.ios.t">iOS</h3>
+              <p data-i18n="mobile.ios.b">TestFlight build coming soon — in the meantime, use the mobile web app.</p>
+            </div>
+          </div>
+          <span class="mobile-card__soon" data-i18n="mobile.ios.soon">Coming soon</span>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- MOBILE-APP-END-MARKER -->
+<!-- ============ WORKFLOW ============ -->
+<section class="section" id="workflow">
+  <div class="container">
+    <header class="section__head reveal">
+      <div class="eyebrow" data-i18n="workflow.eyebrow">Workflow</div>
+      <h2 class="section__title" data-i18n="workflow.title">From idea to live capital — in minutes.</h2>
+      <p class="section__lead" data-i18n="workflow.lead">
+        A straight line from market view to autonomous execution, with a
+        reproducible backtest safety net in between.
+      </p>
+    </header>
+
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step__num">01</div>
+        <h3 data-i18n="s1.t">Research &amp; analyze</h3>
+        <p data-i18n="s1.b">Pull multi-timeframe data, run ensemble AI analysis, inspect indicator signals and comparables — all in one workspace.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step__num">02</div>
+        <h3 data-i18n="s2.t">Build or generate</h3>
+        <p data-i18n="s2.b">Configure a ready-made bot with the visual wizard, or write full Python indicators / strategies using our documented SDK.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step__num">03</div>
+        <h3 data-i18n="s3.t">Backtest &amp; iterate</h3>
+        <p data-i18n="s3.b">Deterministic runs with realistic commissions, slippage, and leverage. Freeze every experiment by code hash and config snapshot.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step__num">04</div>
+        <h3 data-i18n="s4.t">Deploy &amp; operate</h3>
+        <p data-i18n="s4.b">Promote a verified strategy through an explicit deployment flow. Monitor PnL, equity, positions, alerts, worker ownership and idempotent order retries.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ARCHITECTURE ============ -->
+<section class="section" id="architecture">
+  <div class="container">
+    <header class="section__head reveal">
+      <div class="eyebrow" data-i18n="arch.eyebrow">Technical architecture</div>
+      <h2 class="section__title" data-i18n="arch.title">Durable process ownership from API to execution.</h2>
+      <p class="section__lead" data-i18n="arch.lead">
+        v5 separates HTTP, long-lived trading, schedules and finite jobs into
+        independent process roles. PostgreSQL commands, leases and fencing keep
+        execution recoverable across restarts and multi-process deployments.
+      </p>
+    </header>
+
+    <div class="arch reveal">
+      <!-- Layer 1: User / Client -->
+      <div class="arch__layer arch__layer--client">
+        <div class="arch__label">
+          <span class="arch__pill" data-i18n="arch.l.client">Client</span>
+          <span class="arch__desc" data-i18n="arch.d.client">Who talks to the platform</span>
+        </div>
+        <div class="arch__chips">
+          <span class="arch__chip">Web Browser</span>
+          <span class="arch__chip">Mobile (Capacitor)</span>
+          <span class="arch__chip arch__chip--new">AI Agents · MCP</span>
+          <span class="arch__chip">Human API</span>
+          <span class="arch__chip">Automation</span>
+        </div>
+      </div>
+      <div class="arch__link"><span></span></div>
+
+      <!-- Layer 2: Edge -->
+      <div class="arch__layer arch__layer--edge">
+        <div class="arch__label">
+          <span class="arch__pill" data-i18n="arch.l.edge">Edge</span>
+          <span class="arch__desc" data-i18n="arch.d.edge">Delivery &amp; static assets</span>
+        </div>
+        <div class="arch__chips">
+          <span class="arch__chip">Nginx</span>
+          <span class="arch__chip">Prebuilt Vue 3 dist</span>
+          <span class="arch__chip">HTTPS / CDN</span>
+          <span class="arch__chip">Same-origin API proxy</span>
+        </div>
+      </div>
+      <div class="arch__link"><span></span></div>
+
+      <!-- Layer 3: Application -->
+      <div class="arch__layer arch__layer--app">
+        <div class="arch__label">
+          <span class="arch__pill" data-i18n="arch.l.app">Process roles</span>
+          <span class="arch__desc" data-i18n="arch.d.app">Explicit runtime ownership</span>
+        </div>
+        <div class="arch__services">
+          <div class="arch__service">
+            <div class="arch__service-ico">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/><path d="M2 12h20"/><path d="M12 2a15 15 0 010 20"/></svg>
+            </div>
+            <b data-i18n="arch.s.ai.t">HTTP API</b>
+            <small data-i18n="arch.s.ai.b">Auth, validation, durable commands</small>
+          </div>
+          <div class="arch__service">
+            <div class="arch__service-ico">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg>
+            </div>
+            <b data-i18n="arch.s.strat.t">Trading Worker</b>
+            <small data-i18n="arch.s.strat.b">Strategy runtimes, orders, broker sessions</small>
+          </div>
+          <div class="arch__service">
+            <div class="arch__service-ico">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+            <b data-i18n="arch.s.exec.t">Scheduler</b>
+            <small data-i18n="arch.s.exec.b">Portfolio, deployments, payments, alerts</small>
+          </div>
+          <div class="arch__service">
+            <div class="arch__service-ico">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            </div>
+            <b data-i18n="arch.s.bill.t">Celery Jobs</b>
+            <small data-i18n="arch.s.bill.b">AI, backtests, reports, maintenance</small>
+          </div>
+          <div class="arch__service arch__service--new">
+            <div class="arch__service-ico">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <b data-i18n="arch.s.agent.t">Agent Gateway</b>
+            <small data-i18n="arch.s.agent.b">R/W/B/T scopes · audit · job streams</small>
+          </div>
+        </div>
+        <div class="arch__frame-label" data-i18n="arch.frame">One backend image · API + trading + scheduler + Celery worker/beat + migration</div>
+      </div>
+      <div class="arch__link"><span></span></div>
+
+      <!-- Layer 4: State -->
+      <div class="arch__layer arch__layer--state">
+        <div class="arch__label">
+          <span class="arch__pill" data-i18n="arch.l.state">State</span>
+          <span class="arch__desc" data-i18n="arch.d.state">Persistence &amp; runtime coordination</span>
+        </div>
+        <div class="arch__chips">
+          <span class="arch__chip">PostgreSQL 18 · commands &amp; leases</span>
+          <span class="arch__chip">Redis cache · evictable</span>
+          <span class="arch__chip">Redis jobs · AOF + noeviction</span>
+          <span class="arch__chip">Heartbeats · fencing tokens</span>
+        </div>
+      </div>
+      <div class="arch__link arch__link--split"><span></span><span></span></div>
+
+      <!-- Layer 5: Integrations -->
+      <div class="arch__layer arch__layer--ext">
+        <div class="arch__label">
+          <span class="arch__pill" data-i18n="arch.l.ext">Integrations &amp; operations</span>
+          <span class="arch__desc" data-i18n="arch.d.ext">Adapters, metrics and alerts</span>
+        </div>
+        <div class="arch__chips arch__chips--multi">
+          <span class="arch__chip">Crypto exchanges · IBKR · Alpaca</span>
+          <span class="arch__chip">Market data · fundamentals · macro · news</span>
+          <span class="arch__chip">OpenRouter · OpenAI-compatible · Google</span>
+          <span class="arch__chip">Telegram · Email · SMS · Discord</span>
+          <span class="arch__chip">Prometheus · Grafana · Alertmanager</span>
+          <span class="arch__chip">JSON logs · request IDs · health endpoints</span>
+          <span class="arch__chip arch__chip--new">MCP · Cursor · Claude Code · Codex</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stack summary -->
+    <div class="stack reveal">
+      <div class="stack__item">
+        <div class="stack__label" data-i18n="stack.frontend">Frontend</div>
+        <div class="stack__value">Vue 3 · Ant Design Vue · KLineCharts · ECharts · Capacitor</div>
+      </div>
+      <div class="stack__item">
+        <div class="stack__label" data-i18n="stack.backend">Backend</div>
+        <div class="stack__value">Flask · Gunicorn · Strategy API V2 · Celery · CCXT</div>
+      </div>
+      <div class="stack__item">
+        <div class="stack__label" data-i18n="stack.data">Data</div>
+        <div class="stack__value">PostgreSQL 18 · Redis cache · Redis jobs · encrypted credentials</div>
+      </div>
+      <div class="stack__item">
+        <div class="stack__label" data-i18n="stack.deploy">Deploy</div>
+        <div class="stack__value">Docker Compose · production hardening · optional observability overlay</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ AI STACK ============ -->
+<section class="section section--tight">
+  <div class="container">
+    <header class="section__head reveal">
+      <div class="eyebrow" data-i18n="ai.eyebrow">AI stack</div>
+      <h2 class="section__title" data-i18n="ai.title">The best of every model. At your command.</h2>
+      <p class="section__lead" data-i18n="ai.lead">
+        We don't pick a winner — we orchestrate them. Switch providers per
+        query, or let the ensemble vote with confidence calibration.
+      </p>
+    </header>
+
+    <div class="logos reveal">
+      <div class="logo-chip">OpenRouter</div>
+      <div class="logo-chip">OpenAI GPT</div>
+      <div class="logo-chip">Anthropic Claude</div>
+      <div class="logo-chip">Google Gemini</div>
+      <div class="logo-chip">DeepSeek</div>
+      <div class="logo-chip">xAI Grok</div>
+      <div class="logo-chip">Moonshot Kimi</div>
+      <div class="logo-chip">Qwen</div>
+      <div class="logo-chip">Local LLMs</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="section section--tight" id="faq">
+  <div class="container">
+    <header class="section__head reveal">
+      <div class="eyebrow" data-i18n="faq.eyebrow">FAQ</div>
+      <h2 class="section__title" data-i18n="faq.title">Questions, answered.</h2>
+    </header>
+
+    <div class="faq">
+      <details class="faq__item reveal" open>
+        <summary data-i18n="q1.q">Is QuantDinger really self-hosted?</summary>
+        <p data-i18n="q1.a">Yes. The default deployment is your own Docker Compose stack with PostgreSQL, separate cache and job Redis services, isolated backend process roles, credentials, and environment under your control.</p>
+      </details>
+      <details class="faq__item reveal">
+        <summary data-i18n="q2.q">Do you store my exchange API keys?</summary>
+        <p data-i18n="q2.a">Broker credentials and MFA secrets are encrypted with a stable, operator-controlled <code>CREDENTIAL_ENCRYPTION_KEY</code>. They are decrypted only in memory for authorized operations and should never appear in logs.</p>
+      </details>
+      <details class="faq__item reveal">
+        <summary data-i18n="q3.q">Can I write my own strategies and indicators?</summary>
+        <p data-i18n="q3.a">Absolutely. Executable strategies use Strategy API V2: <code>initialize(context)</code> declares the universe and subscriptions, while <code>handle_data</code>, <code>on_rebalance</code>, or scheduled callbacks emit auditable order intents. The same manifest drives backtests and live deployments.</p>
+      </details>
+      <details class="faq__item reveal">
+        <summary data-i18n="q4.q">Which venues are supported for live trading?</summary>
+        <p data-i18n="q4.a">The canonical v5 live-crypto matrix covers Binance, OKX, Bitget, Bybit, Gate and HTX for spot and perpetual workflows. Traditional-broker workflows include IBKR and Alpaca.</p>
+      </details>
+      <details class="faq__item reveal">
+        <summary data-i18n="q5.q">Is it free?</summary>
+        <p data-i18n="q5.a">The backend is Apache 2.0. The prebuilt frontend is source-available under a separate license that allows personal and qualified non-commercial use for free; commercial deployment requires a license — <a href="#license">apply here</a>. See <code>TRADEMARKS.md</code> and <code>LICENSE</code> in the repo.</p>
+      </details>
+      <details class="faq__item reveal">
+        <summary data-i18n="q6.q">What languages is the app available in?</summary>
+        <p data-i18n="q6.a">The app itself is fully localized across 10 languages — English, Simplified &amp; Traditional Chinese, Japanese, Korean, Vietnamese, Thai, French, German, and Arabic.</p>
+      </details>
+      <details class="faq__item reveal">
+        <summary data-i18n="q7.q">Can I plug Cursor / Claude Code / Codex directly into QuantDinger?</summary>
+        <p data-i18n="q7.a">Yes — v5.0.1 ships <code>quantdinger-mcp</code> <strong>0.4.0</strong> on PyPI with 25 tenant-scoped tools for market data, Strategy API V2, chart indicators, asynchronous backtests, runtime state and explicit quick orders. Install with <code>uvx quantdinger-mcp</code> and configure your MCP client.</p>
+      </details>
+      <details class="faq__item reveal">
+        <summary data-i18n="q8.q">Hosted (ai.quantdinger.com) or self-host — which one fits me?</summary>
+        <p data-i18n="q8.a"><strong>Hosted</strong> is best when you want to try QuantDinger from an AI agent in 30 seconds, don't have private exchange keys to plug in, and are fine with paper-only execution — the multi-tenant instance pins <code>paper_only=true</code> and rejects T-scope at issuance, so no agent on the hosted endpoint can ever route real-money orders. <strong>Self-host</strong> is the right call when you have your own exchange API keys, private strategies/data, run behind a VPN, or eventually want live execution. Both paths use identical MCP wiring — only <code>QUANTDINGER_BASE_URL</code> changes.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COMMERCIAL LICENSE (Formspree) ============ -->
+<section class="section section--tight" id="license">
+  <div class="container">
+    <header class="section__head reveal">
+      <div class="eyebrow" data-i18n="license.eyebrow">Commercial license</div>
+      <h2 class="section__title" data-i18n="license.title">Apply for a commercial deployment license.</h2>
+      <p class="section__lead" data-i18n="license.lead">
+        The backend is Apache 2.0. The prebuilt Vue frontend is source-available —
+        personal and qualified non-commercial use is free; commercial deployment,
+        white-label, or SaaS resale requires a license from us.
+      </p>
+    </header>
+
+    <div class="license-grid reveal">
+      <div class="license-grid__info">
+        <ul class="license-points">
+          <li data-i18n="license.point1">Self-hosted enterprise / fund deployments</li>
+          <li data-i18n="license.point2">Customer-facing SaaS or white-label products</li>
+          <li data-i18n="license.point3">OEM embedding of the QuantDinger UI stack</li>
+        </ul>
+        <p class="license-grid__note" data-i18n="license.note">We typically respond within 2–3 business days. For general questions, email <a href="mailto:support@quantdinger.com">support@quantdinger.com</a>.</p>
+        <button type="button" class="btn btn--ghost license-open-modal" data-open-license>
+          <span data-i18n="license.openModal">Apply now</span>
+        </button>
+      </div>
+
+      <form class="license-form" id="licenseForm" novalidate>
+        <div class="license-form__hp" aria-hidden="true">
+          <label>Leave blank<input type="text" name="_gotcha" tabindex="-1" autocomplete="off" /></label>
+        </div>
+        <div class="license-form__row">
+          <label class="license-form__field">
+            <span data-i18n="license.field.name">Full name *</span>
+            <input type="text" name="name" required autocomplete="name" />
+          </label>
+          <label class="license-form__field">
+            <span data-i18n="license.field.email">Work email *</span>
+            <input type="email" name="email" required autocomplete="email" />
+          </label>
+        </div>
+        <div class="license-form__row">
+          <label class="license-form__field">
+            <span data-i18n="license.field.phone">Phone number *</span>
+            <input type="tel" name="phone" required autocomplete="tel" />
+          </label>
+          <label class="license-form__field">
+            <span data-i18n="license.field.use">Primary use case *</span>
+            <select name="use_case" required>
+              <option value="" disabled selected data-i18n="license.selectPlaceholder">Select…</option>
+              <option value="internal" data-i18n="license.use.internal">Internal trading / research desk</option>
+              <option value="saas" data-i18n="license.use.saas">Customer-facing SaaS product</option>
+              <option value="education" data-i18n="license.use.education">Education / training</option>
+              <option value="other" data-i18n="license.use.other">Other (describe below)</option>
+            </select>
+          </label>
+        </div>
+        <label class="license-form__field">
+          <span data-i18n="license.field.company">Company / organization</span>
+          <input type="text" name="company" autocomplete="organization" />
+        </label>
+        <label class="license-form__field">
+          <span data-i18n="license.field.message">Additional notes</span>
+          <textarea name="message" rows="4" data-i18n="license.field.messagePlaceholder" data-i18n-attr="placeholder" placeholder="Team size, timeline, regions…"></textarea>
+        </label>
+        <div class="license-form__actions">
+          <button type="submit" class="btn btn--primary">
+            <span data-i18n="license.submit">Submit application</span>
+          </button>
+        </div>
+        <div class="license-form__status" hidden role="status"></div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LEGAL ============ -->
+<section class="section section--tight" id="legal">
+  <div class="container reveal">
+    <span class="eyebrow" data-i18n="legal.eyebrow">Legal & safety</span>
+    <h2 class="section__title" data-i18n="legal.title">Legal notice</h2>
+    <p class="section__lead" data-i18n="legal.lead">Please read before using the software or engaging with anyone claiming to represent the project.</p>
+
+    <article class="legal__alert">
+      <div class="legal__alert-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <div class="legal__alert-body">
+        <h3 data-i18n="legal.token.t">QuantDinger has NOT issued, does NOT endorse, and will NOT launch any token, coin, ICO, airdrop or cryptocurrency.</h3>
+        <p data-i18n="legal.token.b">Any account, group, website, or &ldquo;team member&rdquo; selling a QuantDinger coin, presale slot, private round, airdrop claim, staking product, or paid VIP group is a <strong>scam</strong> and has no affiliation with us. If someone asks you to send funds, sign a wallet approval, or share an API key to &ldquo;verify your account&rdquo; — it is not us. When in doubt, verify through the official channels below.</p>
+        <div class="legal__official">
+          <strong data-i18n="legal.token.official">Official channels — anything else is impersonation:</strong>
+          <ul>
+            <li><a href="https://quantdinger.com" target="_blank" rel="noopener">quantdinger.com</a></li>
+            <li><a href="https://ai.quantdinger.com" target="_blank" rel="noopener">ai.quantdinger.com</a></li>
+            <li><a href="https://github.com/brokermr810/QuantDinger" target="_blank" rel="noopener">github.com/brokermr810/QuantDinger</a></li>
+            <li><a href="https://t.me/quantdinger" target="_blank" rel="noopener">t.me/quantdinger</a></li>
+            <li><a href="https://discord.com/invite/tyx5B6TChr" target="_blank" rel="noopener">Discord · QuantDinger</a></li>
+            <li><a href="mailto:support@quantdinger.com">support@quantdinger.com</a></li>
+          </ul>
+        </div>
+      </div>
+    </article>
+
+    <div class="legal__grid">
+      <article class="legal__card">
+        <h3 data-i18n="legal.risk.t">Trading risk</h3>
+        <p data-i18n="legal.risk.b">Trading crypto, stocks, forex, futures, and derivatives carries substantial risk and may not be suitable for every investor. You can lose all of your invested capital. Past performance — including any backtest or simulated result produced by the software — is not indicative of future results.</p>
+      </article>
+
+      <article class="legal__card">
+        <h3 data-i18n="legal.advice.t">Not financial advice</h3>
+        <p data-i18n="legal.advice.b">QuantDinger is a technology platform. Nothing on this website, inside the software, or in any AI-generated output constitutes investment, financial, legal, or tax advice. You alone are responsible for every trading decision and its outcome.</p>
+      </article>
+
+      <article class="legal__card">
+        <h3 data-i18n="legal.soft.t">Software &ldquo;AS IS&rdquo;</h3>
+        <p data-i18n="legal.soft.b">The software is provided &ldquo;AS IS&rdquo;, without warranty of any kind, express or implied. You are responsible for securing your own deployment, API keys, infrastructure, and regulatory compliance in your jurisdiction. See the project <code>LICENSE</code> and <code>TRADEMARKS.md</code> for the full terms.</p>
+      </article>
+
+      <article class="legal__card">
+        <h3 data-i18n="legal.brand.t">Trademarks &amp; impersonation</h3>
+        <p data-i18n="legal.brand.b">QuantDinger is a product of OpenByte Inc. &ldquo;QuantDinger&rdquo; and the QuantDinger logo are trademarks of the project. Unauthorized use — including impersonation, fake support, fake airdrops, or pay-to-join &ldquo;QuantDinger&rdquo; groups — will be reported and pursued. If you encounter impersonation, please report it to <code>support@quantdinger.com</code>.</p>
+      </article>
+
+      <article class="legal__card">
+        <h3 data-i18n="legal.compliance.t">Compliance &amp; jurisdiction</h3>
+        <p data-i18n="legal.compliance.b">Some markets, exchanges, and products are restricted or unavailable in certain jurisdictions. You are responsible for ensuring that your use of QuantDinger and any connected venue complies with the laws and regulations applicable to you.</p>
+      </article>
+
+      <article class="legal__card">
+        <h3 data-i18n="legal.privacy.t">Your keys, your data</h3>
+        <p data-i18n="legal.privacy.b">In a self-hosted deployment, your API keys, strategies, AI history, and trade records stay on infrastructure you control. We never ask for your keys, seed phrase, or private wallet signatures. Anyone asking for them is not us.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA ============ -->
+<section class="cta">
+  <div class="container cta__inner reveal">
+    <h2 data-i18n="cta.title">Ready to run your own quant stack?</h2>
+    <p data-i18n="cta.desc">Try the hosted app, or deploy the complete v5 stack on infrastructure you control.</p>
+    <div class="hero__ctas">
+      <a class="btn btn--primary btn--lg" href="https://ai.quantdinger.com" target="_blank" rel="noopener">
+        <span data-i18n="cta.launch">Launch App</span>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+      <a class="btn btn--ghost btn--lg" href="https://github.com/brokermr810/QuantDinger" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.57.1.78-.25.78-.55v-2.1c-3.2.7-3.87-1.38-3.87-1.38-.52-1.33-1.27-1.68-1.27-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.25 3.34.95.1-.74.4-1.25.72-1.54-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.47.11-3.06 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.64 1.59.23 2.77.12 3.06.74.81 1.19 1.84 1.19 3.1 0 4.43-2.69 5.41-5.25 5.69.41.36.78 1.07.78 2.16v3.2c0 .3.2.66.79.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
+        <span data-i18n="cta.github">View on GitHub</span>
+      </a>
+      <button type="button" class="btn btn--ghost btn--lg license-open-modal" data-open-license>
+        <span data-i18n="license.openModal">Apply now</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+  <div class="container footer__inner">
+    <div class="footer__brand">
+      <a class="brand" href="#top" aria-label="QuantDinger home">
+        <span class="brand__mark"><img src="assets/logo.jpg" alt="QuantDinger" /></span>
+        <span class="brand__name">QuantDinger</span>
+      </a>
+      <p class="footer__tag" data-i18n="footer.tag">Your private AI quant operating system — research, Python strategies, backtesting, and live execution on infrastructure you control.</p>
+
+      <div class="socials" aria-label="Social links">
+        <a href="https://github.com/brokermr810/QuantDinger" target="_blank" rel="noopener" aria-label="GitHub">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.57.1.78-.25.78-.55v-2.1c-3.2.7-3.87-1.38-3.87-1.38-.52-1.33-1.27-1.68-1.27-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.25 3.34.95.1-.74.4-1.25.72-1.54-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.47.11-3.06 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.64 1.59.23 2.77.12 3.06.74.81 1.19 1.84 1.19 3.1 0 4.43-2.69 5.41-5.25 5.69.41.36.78 1.07.78 2.16v3.2c0 .3.2.66.79.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
+        </a>
+        <a href="https://t.me/quantdinger" target="_blank" rel="noopener" aria-label="Telegram">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+        </a>
+        <a href="https://discord.com/invite/tyx5B6TChr" target="_blank" rel="noopener" aria-label="Discord">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+        </a>
+        <a href="https://youtube.com/@quantdinger" target="_blank" rel="noopener" aria-label="YouTube">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+        </a>
+        <a href="mailto:support@quantdinger.com" aria-label="Email">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="footer__cols">
+      <div>
+        <h4 data-i18n="footer.product">Product</h4>
+        <a href="#features"  data-i18n="nav.features">Features</a>
+        <a href="#markets"   data-i18n="nav.markets">Markets</a>
+        <a href="#workflow"  data-i18n="nav.workflow">Workflow</a>
+        <a href="https://ai.quantdinger.com" target="_blank" rel="noopener" data-i18n="nav.launch">Launch App</a>
+        <a href="https://m.quantdinger.com" target="_blank" rel="noopener" data-i18n="footer.mobile">Mobile Web</a>
+        <a href="https://www.quantdinger.com/download/app.apk" data-i18n="footer.apk">Android APK</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.resources">Resources</h4>
+        <a href="https://github.com/brokermr810/QuantDinger" target="_blank" rel="noopener">GitHub</a>
+        <a href="doc/" data-docs-link data-i18n="footer.docs">Documentation</a>
+        <a href="https://github.com/brokermr810/QuantDinger/releases" target="_blank" rel="noopener" data-i18n="footer.changelog">Releases</a>
+        <a href="https://pypi.org/project/quantdinger-mcp/" target="_blank" rel="noopener" data-i18n="footer.mcp">MCP server (PyPI)</a>
+        <a href="https://www.youtube.com/watch?v=tNAZ9uMiUUw" target="_blank" rel="noopener" data-i18n="footer.video">Video demo</a>
+        <a href="#legal" data-i18n="footer.legal">Legal notice</a>
+        <a href="#license" data-i18n="footer.license">Commercial license</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.community">Community</h4>
+        <a href="https://t.me/quantdinger" target="_blank" rel="noopener">Telegram</a>
+        <a href="https://discord.com/invite/tyx5B6TChr" target="_blank" rel="noopener">Discord</a>
+        <a href="https://youtube.com/@quantdinger" target="_blank" rel="noopener">YouTube</a>
+        <a href="mailto:support@quantdinger.com" data-i18n="footer.contact">Contact</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="container footer__bottom">
+    <span><span data-i18n="footer.copy">© <span id="year">2026</span> OpenByte Inc. All rights reserved.</span></span>
+    <span class="footer__risk" data-i18n="footer.risk">Trading involves risk. Past performance does not guarantee future results.</span>
+  </div>
+</footer>
+
+<!-- License application modal -->
+<div class="modal" id="licenseModal" aria-hidden="true" role="dialog" aria-labelledby="licenseModalTitle" aria-modal="true">
+  <div class="modal__backdrop" data-close-license></div>
+  <div class="modal__panel">
+    <button type="button" class="modal__close" data-close-license data-i18n="license.modal.close" data-i18n-attr="aria-label" aria-label="Close">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <h3 id="licenseModalTitle" data-i18n="license.modal.title">Commercial license application</h3>
+    <p class="modal__sub" data-i18n="license.modal.sub">Tell us about your deployment. Fields marked * are required.</p>
+    <form class="license-form license-form--modal" id="licenseFormModal" novalidate>
+      <div class="license-form__hp" aria-hidden="true">
+        <label>Leave blank<input type="text" name="_gotcha" tabindex="-1" autocomplete="off" /></label>
+      </div>
+      <label class="license-form__field">
+        <span data-i18n="license.field.name">Full name *</span>
+        <input type="text" name="name" required autocomplete="name" />
+      </label>
+      <label class="license-form__field">
+        <span data-i18n="license.field.email">Work email *</span>
+        <input type="email" name="email" required autocomplete="email" />
+      </label>
+      <label class="license-form__field">
+        <span data-i18n="license.field.phone">Phone number *</span>
+        <input type="tel" name="phone" required autocomplete="tel" />
+      </label>
+      <label class="license-form__field">
+        <span data-i18n="license.field.use">Primary use case *</span>
+        <select name="use_case" required>
+          <option value="" disabled selected data-i18n="license.selectPlaceholder">Select…</option>
+          <option value="internal" data-i18n="license.use.internal">Internal trading / research desk</option>
+          <option value="saas" data-i18n="license.use.saas">Customer-facing SaaS product</option>
+          <option value="education" data-i18n="license.use.education">Education / training</option>
+          <option value="other" data-i18n="license.use.other">Other (describe below)</option>
+        </select>
+      </label>
+      <label class="license-form__field">
+        <span data-i18n="license.field.company">Company / organization</span>
+        <input type="text" name="company" autocomplete="organization" />
+      </label>
+      <label class="license-form__field">
+        <span data-i18n="license.field.message">Additional notes</span>
+        <textarea name="message" rows="3" data-i18n="license.field.messagePlaceholder" data-i18n-attr="placeholder" placeholder="Team size, timeline, regions…"></textarea>
+      </label>
+      <div class="license-form__actions">
+        <button type="submit" class="btn btn--primary btn--block">
+          <span data-i18n="license.submit">Submit application</span>
+        </button>
+      </div>
+      <div class="license-form__status" hidden role="status"></div>
+    </form>
+  </div>
+</div>
+
+<script src="js/site-config.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
+

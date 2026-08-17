@@ -1,0 +1,723 @@
+/* 全局样式重置 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  font-family:
+    "Microsoft YaHei", "PingFang SC", "Helvetica Neue", STHeiti, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #ffffff;
+  color: #303133;
+  overflow-x: hidden;
+}
+
+#app {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+}
+
+/* 量化交易专业界面配色方案 - 浅色主题 */
+:root {
+  /* 背景色系 */
+  --primary-bg: #ffffff; /* 主背景 */
+  --secondary-bg: #f8f9fa; /* 卡片背景 */
+  --tertiary-bg: #e9ecef; /* 次级背景 */
+  --border-color: #dee2e6; /* 边框色 */
+  --hover-bg: #e9ecef; /* 悬停背景 */
+  /* 深色主题别名（浅色模式下的值） */
+  --bg-primary: var(--primary-bg);
+  --bg-secondary: var(--secondary-bg);
+  --bg-tertiary: var(--tertiary-bg);
+  --bond-bg: var(--tertiary-bg);
+  --border-secondary: var(--border-color);
+  --border-tertiary: var(--hover-bg);
+
+  /* 文字颜色 */
+  --text-primary: #303133; /* 主文字 */
+  --text-secondary: #606266; /* 次要文字 */
+  --text-muted: #909399; /* muted文字 */
+  --text-disabled: #c0c4cc; /* 禁用文字 */
+
+  /* 品牌色系 - 青色调 */
+  --accent-blue: #409eff; /* 主要强调色 */
+  --accent-blue-dark: #337ecc; /* 深蓝色 */
+  --accent-green: #67c23a; /* 成功/盈利 */
+  --accent-red: #f56c6c; /* 错误/亏损 */
+  --accent-orange: #e6a23c; /* 警告 */
+  --accent-purple: #c71585; /* 特殊强调 */
+
+  /* 状态颜色 */
+  --success-color: #67c23a;
+  --error-color: #f56c6c;
+  --warning-color: #e6a23c;
+  --info-color: #909399;
+
+  /* 阴影和效果 */
+  --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  --card-shadow-hover: 0 4px 20px rgba(0, 0, 0, 0.15);
+  --glow-effect: 0 0 12px rgba(64, 158, 255, 0.3);
+  --shadow-premium-lg: 0 8px 30px rgba(0, 0, 0, 0.12);
+  --shadow-premium-xl: 0 16px 48px rgba(0, 0, 0, 0.18);
+
+  /* 渐变和玻璃效果 */
+  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+
+  /* 边框光效 */
+  --border-glow-primary: 1px solid rgba(64, 158, 255, 0.3);
+
+  /* 圆角 */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* 过渡动画 */
+  --transition-fast: 150ms;
+  --transition-normal: 300ms;
+  --transition-smooth: 350ms;
+  --transition-slow: 500ms;
+  --transition-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* 字体大小 */
+  --font-xs: 11px;
+  --font-sm: 12px;
+  --font-base: 14px;
+  --font-lg: 16px;
+  --font-xl: 18px;
+
+  /* 字重 */
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* 按钮颜色 */
+  --btn-primary: #409eff;
+  --btn-primary-hover: #337ecc;
+
+  /* 输入框 */
+  --input-bg: #ffffff;
+  --input-border: #dcdfe6;
+  --input-hover: #c0c4cc;
+  --input-focus: #409eff;
+  --input-text: #303133;
+  --input-placeholder: #c0c4cc;
+
+  /* 发光效果 */
+  --glow-primary: 0 0 12px rgba(64, 158, 255, 0.3);
+}
+
+/* Element Plus 自定义样式 - 量化交易主题 */
+.el-button--primary {
+  background: var(--accent-blue);
+  border: 1px solid var(--accent-blue);
+  border-radius: 6px;
+  color: white;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.el-button--primary:hover {
+  background: var(--accent-blue-dark);
+  border-color: var(--accent-blue-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--glow-effect);
+}
+
+.el-button--primary:active {
+  transform: translateY(0);
+}
+
+.el-button--success {
+  background: var(--accent-green);
+  border: 1px solid var(--accent-green);
+  border-radius: 6px;
+  color: var(--primary-bg);
+  font-weight: 600;
+}
+
+.el-button--success:hover {
+  background: var(--success-color);
+  border-color: var(--success-color);
+}
+
+.el-button--danger {
+  background: var(--accent-red);
+  border: 1px solid var(--accent-red);
+  border-radius: 6px;
+  color: white;
+  font-weight: 600;
+}
+
+.el-button--danger:hover {
+  background: var(--error-color);
+  border-color: var(--error-color);
+}
+
+.el-menu {
+  background-color: var(--secondary-bg);
+  border-right: 1px solid var(--border-color);
+}
+
+.el-menu-item {
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.el-menu-item:hover {
+  background-color: var(--tertiary-bg);
+  color: var(--accent-blue);
+}
+
+.el-menu-item.is-active {
+  background: linear-gradient(
+    90deg,
+    rgba(88, 166, 255, 0.1) 0%,
+    rgba(88, 166, 255, 0.05) 100%
+  );
+  color: var(--accent-blue);
+  border-left: 3px solid var(--accent-blue);
+  position: relative;
+}
+
+.el-menu-item.is-active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--accent-blue);
+}
+
+/* 卡片样式 - 量化交易风格 */
+.el-card {
+  background-color: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+}
+
+.el-card:hover {
+  box-shadow: var(--card-shadow-hover);
+  border-color: rgba(88, 166, 255, 0.3);
+}
+
+.el-card__header {
+  background: linear-gradient(
+    135deg,
+    var(--secondary-bg) 0%,
+    var(--tertiary-bg) 100%
+  );
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-weight: 600;
+  padding: 16px 20px;
+}
+
+/* 表格样式 - 专业量化表格 */
+.el-table {
+  background-color: var(--secondary-bg);
+  color: var(--text-primary);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.el-table th {
+  background: linear-gradient(
+    135deg,
+    var(--tertiary-bg) 0%,
+    var(--secondary-bg) 100%
+  );
+  color: var(--text-primary);
+  font-weight: 600;
+  border-bottom: 2px solid var(--accent-blue);
+  font-size: 13px;
+  padding: 12px 8px;
+}
+
+.el-table td {
+  border-bottom: 1px solid rgba(177, 186, 196, 0.1);
+  color: var(--text-secondary);
+  padding: 12px 8px;
+}
+
+.el-table--striped .el-table__body tr.el-table__row--striped td {
+  background-color: rgba(177, 186, 196, 0.02);
+}
+
+.el-table tr:hover td {
+  background-color: rgba(88, 166, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.el-table tr:hover {
+  box-shadow: inset 0 0 0 1px rgba(88, 166, 255, 0.2);
+}
+
+/* 输入框样式 */
+.el-input__inner {
+  background-color: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.el-input__inner:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+  outline: none;
+}
+
+.el-input__inner:hover {
+  border-color: rgba(88, 166, 255, 0.5);
+}
+
+.el-input__inner::placeholder {
+  color: var(--text-muted);
+}
+
+/* 选择器样式 */
+.el-select-dropdown {
+  background-color: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: var(--card-shadow);
+}
+
+.el-select-dropdown__item {
+  color: var(--text-secondary);
+  padding: 8px 16px;
+}
+
+.el-select-dropdown__item:hover {
+  background-color: var(--hover-bg);
+  color: var(--accent-blue);
+}
+
+.el-select-dropdown__item.selected {
+  background: linear-gradient(
+    90deg,
+    rgba(88, 166, 255, 0.1) 0%,
+    rgba(88, 166, 255, 0.05) 100%
+  );
+  color: var(--accent-blue);
+  font-weight: 600;
+}
+
+/* 标签样式 */
+.el-tag {
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+.el-tag--success {
+  background-color: rgba(56, 158, 61, 0.1);
+  border-color: var(--accent-green);
+  color: var(--accent-green);
+}
+
+.el-tag--danger {
+  background-color: rgba(218, 54, 51, 0.1);
+  border-color: var(--accent-red);
+  color: var(--accent-red);
+}
+
+.el-tag--warning {
+  background-color: rgba(187, 128, 9, 0.1);
+  border-color: var(--accent-orange);
+  color: var(--accent-orange);
+}
+
+.el-tag--info {
+  background-color: rgba(121, 192, 255, 0.1);
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+}
+
+/* 统计组件样式 */
+.el-statistic__content {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: var(--accent-blue);
+}
+
+.el-statistic__label {
+  color: var(--text-secondary);
+}
+
+/* 加载动画 */
+.el-loading-mask {
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+.el-loading-spinner .el-loading-text {
+  color: var(--accent-blue);
+}
+
+/* 金融交易专用样式 */
+
+/* 图表容器 */
+.chart-container {
+  background-color: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: var(--card-shadow);
+  position: relative;
+}
+
+.chart-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--accent-blue) 0%,
+    var(--accent-green) 100%
+  );
+  border-radius: 8px 8px 0 0;
+}
+
+/* 数据面板 */
+.data-panel {
+  background: linear-gradient(
+    135deg,
+    var(--secondary-bg) 0%,
+    var(--tertiary-bg) 100%
+  );
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: var(--card-shadow);
+}
+
+/* 交易按钮 */
+.trade-button {
+  background: linear-gradient(135deg, var(--accent-green) 0%, #52c41a 100%);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-weight: 600;
+  padding: 12px 24px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(103, 194, 58, 0.3);
+}
+
+.trade-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(103, 194, 58, 0.4);
+}
+
+.trade-button.sell {
+  background: linear-gradient(135deg, var(--accent-red) 0%, #f5222d 100%);
+  box-shadow: 0 2px 8px rgba(245, 108, 108, 0.3);
+}
+
+.trade-button.sell:hover {
+  box-shadow: 0 4px 12px rgba(245, 108, 108, 0.4);
+}
+
+/* 价格显示 */
+.price-display {
+  font-family: "Courier New", monospace;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--accent-blue);
+}
+
+.price-up {
+  color: var(--accent-green);
+}
+
+.price-down {
+  color: var(--accent-red);
+}
+
+/* 状态指示器 */
+.status-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.status-indicator.online {
+  background-color: var(--accent-green);
+  box-shadow: 0 0 8px var(--accent-green);
+}
+
+.status-indicator.offline {
+  background-color: var(--accent-red);
+  box-shadow: 0 0 8px var(--accent-red);
+}
+
+.status-indicator.warning {
+  background-color: var(--accent-orange);
+  box-shadow: 0 0 8px var(--accent-orange);
+}
+
+/* 导航栏 */
+.navbar {
+  background: linear-gradient(
+    135deg,
+    var(--secondary-bg) 0%,
+    var(--primary-bg) 100%
+  );
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* 侧边栏 */
+.sidebar {
+  background: linear-gradient(
+    180deg,
+    var(--secondary-bg) 0%,
+    var(--tertiary-bg) 100%
+  );
+  border-right: 1px solid var(--border-color);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.08);
+}
+
+/* 主内容区域 */
+.main-content {
+  background-color: var(--primary-bg);
+  min-height: calc(100vh - 60px);
+}
+
+/* 表单样式 */
+.el-form-item__label {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.el-form-item__label::before {
+  display: none;
+}
+
+/* 时间线样式 */
+.el-timeline-item__node {
+  background-color: var(--accent-blue);
+  border-color: var(--accent-blue);
+}
+
+.el-timeline-item__content {
+  color: var(--text-secondary);
+}
+
+/* 分页器样式 */
+.el-pagination {
+  background-color: var(--secondary-bg);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.el-pagination button,
+.el-pagination span {
+  background-color: var(--secondary-bg);
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+}
+
+.el-pagination .el-pager li {
+  background-color: var(--secondary-bg);
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+}
+
+.el-pagination .el-pager li:hover {
+  color: var(--accent-blue);
+}
+
+.el-pagination .el-pager li.active {
+  background-color: var(--accent-blue);
+  color: white;
+  border-color: var(--accent-blue);
+}
+
+/* 对话框样式 */
+.el-dialog {
+  background-color: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.el-dialog__header {
+  background-color: var(--tertiary-bg);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.el-dialog__body {
+  color: var(--text-secondary);
+}
+
+.el-dialog__footer {
+  border-top: 1px solid var(--border-color);
+}
+
+/* 消息提示样式 */
+.el-message {
+  background-color: var(--secondary-bg);
+  border: 1px solid var(--accent-blue);
+  border-radius: 8px;
+  color: var(--text-primary);
+}
+
+.el-message--success {
+  border-color: var(--accent-green);
+  background-color: rgba(0, 255, 136, 0.1);
+}
+
+.el-message--error {
+  border-color: var(--accent-red);
+  background-color: rgba(255, 71, 87, 0.1);
+}
+
+.el-message--warning {
+  border-color: var(--accent-orange);
+  background-color: rgba(255, 165, 0, 0.1);
+}
+
+/* 自定义滚动条 - 金融风格 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--tertiary-bg);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-blue);
+}
+
+/* 工具类 */
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.mb-10 {
+  margin-bottom: 10px;
+}
+
+.mb-20 {
+  margin-bottom: 20px;
+}
+
+.mt-10 {
+  margin-top: 10px;
+}
+
+.mt-20 {
+  margin-top: 20px;
+}
+
+.profit-color {
+  color: var(--accent-green);
+}
+
+.loss-color {
+  color: var(--accent-red);
+}
+
+.warning-color {
+  color: var(--accent-orange);
+}
+
+.info-color {
+  color: var(--accent-blue);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .el-row {
+    margin: 0 !important;
+  }
+
+  .el-col {
+    padding: 0 5px !important;
+  }
+
+  .el-form-item {
+    margin-bottom: 12px;
+  }
+
+  .chart-container {
+    padding: 8px;
+  }
+
+  .data-panel {
+    padding: 12px;
+  }
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 212, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 212, 255, 0);
+  }
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}

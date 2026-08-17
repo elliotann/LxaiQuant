@@ -1,0 +1,77 @@
+spring:
+  profiles:
+    active: dev,websocket-test
+  mail:
+    host: ${MAIL_HOST:smtp.qq.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+server:
+  port: 8118
+
+openclaw:
+  bridge:
+    token: "oc-bridge-123456"
+
+cruise:
+  guard:
+    enabled: true
+    defaultGoalPercent: 2
+    defaultMaxLossPercent: 1
+    action: PAUSE
+    cancelPendingPlans: true
+    closePositions: true
+    maxSessionsPerRun: 200
+
+# AI Agent (LangChain4j + MCP)
+ai:
+  agent:
+    openai:
+      api-key: ${AI_AGENT_OPENAI_API_KEY:}
+      model: ${AI_AGENT_OPENAI_MODEL:gpt-4}
+    deepseek:
+      api-key: ${AI_AGENT_DEEPSEEK_API_KEY:}
+      model: ${AI_AGENT_DEEPSEEK_MODEL:deepseek-chat}
+    ollama:
+      base-url: ${AI_AGENT_OLLAMA_BASE_URL:http://localhost:11434}
+      model: ${AI_AGENT_OLLAMA_MODEL:llama3}
+
+langchain4j:
+  open-ai:
+    api-key: ${AI_AGENT_OPENAI_API_KEY:}
+    model: ${AI_AGENT_OPENAI_MODEL:gpt-4}
+
+# ML模型增强模块配置
+ml:
+  model:
+    storage-dir: ${ML_MODEL_STORAGE_DIR:./models}
+    lookahead-bars: 12
+    num-trees: 500
+    max-depth: 3
+    min-samples: 40
+    max-versions-per-symbol: 5
+  inference:
+    probability-threshold: 0.65
+  label:
+    horizon: 3
+    threshold-pct: 0.005
+  training:
+    progress-polling-interval-ms: 2000
+    default-lookback-bars: 2000
+
+# 波动率预测配置
+volatility:
+  atr-period: 14
+  lookback-days: 30
+  clustering:
+    n-clusters: 3

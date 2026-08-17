@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.chain.ai.trade.engine.strategy.mapper.BotParameterMapper">
+
+    <!-- 查询机器人某分组的所有参数 -->
+    <select id="selectByBotIdAndGroup" resultType="com.chain.ai.trade.engine.strategy.entity.dos.BotParameter">
+        SELECT id, bot_id, group_name, name, value, created_at, updated_at
+        FROM bot_parameter
+        WHERE bot_id = #{botId} AND group_name = #{groupName}
+        ORDER BY name
+    </select>
+
+    <!-- 查询指定参数值 -->
+    <select id="selectByBotIdGroupAndName" resultType="com.chain.ai.trade.engine.strategy.entity.dos.BotParameter">
+        SELECT id, bot_id, group_name, name, value, created_at, updated_at
+        FROM bot_parameter
+        WHERE bot_id = #{botId} AND group_name = #{groupName} AND name = #{name}
+    </select>
+
+    <!-- 删除机器人某分组下所有参数 -->
+    <delete id="deleteByBotIdAndGroup">
+        DELETE FROM bot_parameter
+        WHERE bot_id = #{botId} AND group_name = #{groupName}
+    </delete>
+
+    <!-- 删除机器人的所有参数 -->
+    <delete id="deleteByBotId">
+        DELETE FROM bot_parameter WHERE bot_id = #{botId}
+    </delete>
+
+</mapper>

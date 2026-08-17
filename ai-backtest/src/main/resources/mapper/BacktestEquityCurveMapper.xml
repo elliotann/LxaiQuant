@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chain.ai.trade.backtest.mapper.BacktestEquityCurveMapper">
+
+    <sql id="Base_Column_List">
+        id, task_id, robot_id, robot_name, time, equity, return_rate, drawdown,
+        benchmark_value, benchmark_return_rate
+    </sql>
+
+    <select id="selectByTaskId" resultType="com.chain.ai.trade.backtest.entity.dos.BacktestEquityCurve">
+        SELECT * FROM ai_equity_curve
+        WHERE task_id = #{taskId}
+        ORDER BY time ASC
+    </select>
+
+    <delete id="deleteByTaskId">
+        DELETE FROM ai_equity_curve
+        WHERE task_id = #{taskId}
+    </delete>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO ai_equity_curve (task_id, robot_id, robot_name, time, equity, return_rate, drawdown, benchmark_value, benchmark_return_rate)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.taskId}, #{item.robotId}, #{item.robotName}, #{item.time}, #{item.equity}, #{item.returnRate}, #{item.drawdown}, #{item.benchmarkValue}, #{item.benchmarkReturnRate})
+        </foreach>
+    </insert>
+
+    <insert id="batchInsertOrUpdate" parameterType="java.util.List">
+        INSERT INTO ai_equity_curve (task_id, robot_id, robot_name, time, equity, return_rate, drawdown)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.taskId}, #{item.robotId}, #{item.robotName}, #{item.time}, #{item.equity}, #{item.returnRate}, #{item.drawdown})
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        equity = VALUES(equity),
+        return_rate = VALUES(return_rate),
+        drawdown = VALUES(drawdown)
+    </insert>
+
+    <select id="selectByRobotIds" resultType="com.chain.ai.trade.backtest.entity.dos.BacktestEquityCurve">
+        SELECT <include refid="Base_Column_List"/>
+        FROM ai_equity_curve
+        WHERE robot_id IN
+        <foreach collection="robotIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND time BETWEEN #{startTime} AND #{endTime}
+        ORDER BY robot_id, time ASC
+    </select>
+
+    <select id="selectLatestByRobotIds" resultType="com.chain.ai.trade.backtest.entity.dos.BacktestEquityCurve">
+        SELECT <include refid="Base_Column_List"/>
+        FROM ai_equity_curve e
+        INNER JOIN (
+            SELECT robot_id, MAX(time) AS max_time
+            FROM ai_equity_curve
+            WHERE robot_id IN
+            <foreach collection="list" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+            GROUP BY robot_id
+        ) latest ON e.robot_id = latest.robot_id AND e.time = latest.max_time
+    </select>
+
+    <select id="selectAccountEquityCurve" resultType="com.chain.ai.trade.backtest.entity.dto.AccountEquityPoint">
+        SELECT DATE(time) AS date, SUM(equity) AS total_equity
+        FROM ai_equity_curve
+        WHERE robot_id IS NOT NULL
+          AND task_id IS NULL
+          AND time BETWEEN #{startTime} AND #{endTime}
+        GROUP BY DATE(time)
+        ORDER BY date ASC
+    </select>
+
+    <select id="selectByRobotIdAndTimeRange" resultType="com.chain.ai.trade.backtest.entity.dos.BacktestEquityCurve">
+        SELECT <include refid="Base_Column_List"/>
+        FROM ai_equity_curve
+        WHERE robot_id = #{robotId}
+          AND time BETWEEN #{startTime} AND #{endTime}
+        ORDER BY time ASC
+    </select>
+
+</mapper>

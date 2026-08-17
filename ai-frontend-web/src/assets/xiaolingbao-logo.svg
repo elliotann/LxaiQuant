@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" fill="none">
+  <defs>
+    <linearGradient id="g" x1="18" y1="16" x2="110" y2="112" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2DE2E6"/>
+      <stop offset="0.5" stop-color="#7A5CFF"/>
+      <stop offset="1" stop-color="#00FFA3"/>
+    </linearGradient>
+    <radialGradient id="r" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(64 52) rotate(90) scale(56)">
+      <stop stop-color="#0B1220" stop-opacity="0"/>
+      <stop offset="1" stop-color="#0B1220" stop-opacity="0.7"/>
+    </radialGradient>
+  </defs>
+  <rect x="8" y="8" width="112" height="112" rx="28" fill="#0B1220"/>
+  <rect x="8" y="8" width="112" height="112" rx="28" fill="url(#r)"/>
+  <path d="M42 70c0 12.15 9.85 22 22 22s22-9.85 22-22V56c0-6.63-5.37-12-12-12H54c-6.63 0-12 5.37-12 12v14Z" fill="url(#g)" opacity="0.92"/>
+  <path d="M52 58c0-2.21 1.79-4 4-4h2c2.21 0 4 1.79 4 4v2c0 2.21-1.79 4-4 4h-2c-2.21 0-4-1.79-4-4v-2Z" fill="#0B1220"/>
+  <path d="M66 58c0-2.21 1.79-4 4-4h2c2.21 0 4 1.79 4 4v2c0 2.21-1.79 4-4 4h-2c-2.21 0-4-1.79-4-4v-2Z" fill="#0B1220"/>
+  <path d="M46 38c8-10 28-14 44-4" stroke="url(#g)" stroke-width="6" stroke-linecap="round" opacity="0.9"/>
+  <path d="M48 94c10 10 22 10 32 0" stroke="#0B1220" stroke-width="6" stroke-linecap="round" opacity="0.85"/>
+</svg>
+

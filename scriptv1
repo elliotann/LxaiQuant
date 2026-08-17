@@ -1,0 +1,521 @@
+//@version=6
+strategy(title="andy3 ai lezi - RF Pro风格完整重构版", overlay=true,
+     commission_type=strategy.commission.percent,
+     commission_value=0.025,
+     default_qty_type=strategy.cash,
+     default_qty_value=10000,
+     initial_capital=10000,
+     slippage=0,
+     process_orders_on_close=true)
+
+// === EMA TREND FILTER SETTINGS ===
+useEmaFilter = input.bool(true, title="启用EMA趋势过滤")
+baseEmaPeriod = input.int(100, title="基础EMA周期", minval=5)
+momentumEmaPeriod = input.int(20, title="动量EMA周期", minval=5)
+emaFilterMode = input.string("两者都需要", title="EMA过滤模式", options=["两者都需要", "任一即可", "仅基础EMA", "仅动量EMA"])
+
+// === RSI FILTER SETTINGS ===
+useRSIFilter = input.bool(true, title="启用RSI过滤")
+rsiLength = input.int(14, title="RSI周期", minval=5, maxval=50)
+rsiOverbought = input.int(70, title="超买水平", minval=50, maxval=90)
+rsiOversold = input.int(30, title="超卖水平", minval=10, maxval=50)
+rsiSource = input(close, title="RSI数据源")
+rsiFilterMode = input.string("超买超卖", title="RSI过滤模式",
+     options=["超买超卖", "趋势方向", "金叉死叉", "背离检测"])
+
+// === 分批止盈设置 (3-Stage Partial TP) ===
+usePartialTP = input.bool(true, title="启用分批止盈")
+
+useTP1 = input.bool(true, "启用第1段止盈", inline="tp1")
+tp1Trigger = input.float(2.0, "收益率%", minval=0.1, step=0.1, group="分批止盈设置", inline="tp1")
+tp1Qty = input.float(33.0, "平仓比例%", minval=1, maxval=100, step=1, group="分批止盈设置", inline="tp1")
+
+useTP2 = input.bool(true, "启用第2段止盈", inline="tp2")
+tp2Trigger = input.float(4.0, "收益率%", minval=0.1, step=0.1, group="分批止盈设置", inline="tp2")
+tp2Qty = input.float(50.0, "平仓比例%", minval=1, maxval=100, step=1, group="分批止盈设置", inline="tp2")
+
+useTP3 = input.bool(true, "启用第3段止盈", inline="tp3")
+tp3Trigger = input.float(6.0, "收益率%", minval=0.1, step=0.1, group="分批止盈设置", inline="tp3")
+tp3Qty = input.float(100.0, "平仓比例%", minval=1, maxval=100, step=1, group="分批止盈设置", inline="tp3")
+
+// === 止损设置 ===
+useStopLoss = input.bool(true, title='启用止损')
+slPercent = input.float(2.0, title='止损比例%', minval=0.1, step=0.1) / 100
+
+// === ATR移动止盈设置 (RF Pro风格) ===
+useTrailing = input.bool(true, title="启用ATR移动止盈", group="🔥 ATR移动止盈")
+atrLength = input.int(14, title="ATR周期", minval=5, group="🔥 ATR移动止盈")
+trailTriggerMult = input.float(5.0, title="触发ATR倍数", minval=1.0, step=0.1, group="🔥 ATR移动止盈")
+trailOffsetMult = input.float(1.5, title="回撤平仓ATR倍数", minval=0.5, step=0.1, group="🔥 ATR移动止盈")
+showTrailingStopLine = input.bool(true, title="显示移动止盈线", group="🔥 ATR移动止盈")
+
+// === 显示设置 ===
+showBaseEmaLine = input.bool(true, title="显示基础EMA线")
+showMomentumEmaLine = input.bool(true, title="显示动量EMA线")
+showPartialTPLevels = input.bool(false, title="显示分批止盈水平线")
+
+// === Range Filter参数 ===
+sources = input(close, title="数据源")
+isHA = input.bool(false, "使用Heikin Ashi蜡烛")
+src = isHA ? request.security(syminfo.tickerid, "D", sources, lookahead=barmerge.lookahead_on) : sources
+per = input.int(50, minval=1, title="采样周期")
+mult = input.float(3.0, minval=0.1, title="范围乘数")
+
+// === 计算EMA值 ===
+baseEmaValue = ta.ema(close, baseEmaPeriod)
+momentumEmaValue = ta.ema(close, momentumEmaPeriod)
+prevClose = close[1]
+prevBaseEmaValue = baseEmaValue[1]
+prevMomentumEmaValue = momentumEmaValue[1]
+
+// === 计算RSI ===
+rsiValue = ta.rsi(rsiSource, rsiLength)
+prevRsiValue = rsiValue[1]
+
+// === 计算ATR ===
+atrValue = ta.atr(atrLength)
+prevAtrValue = atrValue[1]
+
+// === 分批止盈状态变量 ===
+var bool isTp1ExecutedLong = false
+var bool isTp2ExecutedLong = false
+var bool isTp3ExecutedLong = false
+var bool isTp1ExecutedShort = false
+var bool isTp2ExecutedShort = false
+var bool isTp3ExecutedShort = false
+
+// === 仓位管理变量 (RF Pro风格) ===
+var float longEntryPrice = na
+var float shortEntryPrice = na
+var float longInitialStop = na
+var float shortInitialStop = na
+var bool trailingActiveLong = false
+var bool trailingActiveShort = false
+var float highSinceEntryLong = na
+var float lowSinceEntryShort = na
+var float trailingStopPriceLong = na
+var float trailingStopPriceShort = na
+
+// === 计算当前持仓盈利率 ===
+float currentProfitPctLong = na
+float currentProfitPctShort = na
+
+if strategy.position_size > 0 and not na(longEntryPrice)
+    currentProfitPctLong := (close[1] - longEntryPrice) / longEntryPrice * 100
+
+if strategy.position_size < 0 and not na(shortEntryPrice)
+    currentProfitPctShort := (shortEntryPrice - close[1]) / shortEntryPrice * 100
+
+// === 计算分批止盈价格 ===
+float tp1LongPrice = na
+float tp2LongPrice = na
+float tp3LongPrice = na
+float tp1ShortPrice = na
+float tp2ShortPrice = na
+float tp3ShortPrice = na
+
+if strategy.position_size > 0 and not na(longEntryPrice) and usePartialTP
+    tp1LongPrice := longEntryPrice * (1 + tp1Trigger / 100)
+    tp2LongPrice := longEntryPrice * (1 + tp2Trigger / 100)
+    tp3LongPrice := longEntryPrice * (1 + tp3Trigger / 100)
+
+if strategy.position_size < 0 and not na(shortEntryPrice) and usePartialTP
+    tp1ShortPrice := shortEntryPrice * (1 - tp1Trigger / 100)
+    tp2ShortPrice := shortEntryPrice * (1 - tp2Trigger / 100)
+    tp3ShortPrice := shortEntryPrice * (1 - tp3Trigger / 100)
+
+// === EMA过滤条件 ===
+baseEmaFilterLong = not useEmaFilter or prevClose > prevBaseEmaValue
+baseEmaFilterShort = not useEmaFilter or prevClose < prevBaseEmaValue
+momentumEmaFilterLong = not useEmaFilter or prevClose > prevMomentumEmaValue
+momentumEmaFilterShort = not useEmaFilter or prevClose < prevMomentumEmaValue
+
+emaFilterLong = switch emaFilterMode
+    "两者都需要" => baseEmaFilterLong and momentumEmaFilterLong
+    "任一即可" => baseEmaFilterLong or momentumEmaFilterLong
+    "仅基础EMA" => baseEmaFilterLong
+    "仅动量EMA" => momentumEmaFilterLong
+    => true
+
+emaFilterShort = switch emaFilterMode
+    "两者都需要" => baseEmaFilterShort and momentumEmaFilterShort
+    "任一即可" => baseEmaFilterShort or momentumEmaFilterShort
+    "仅基础EMA" => baseEmaFilterShort
+    "仅动量EMA" => momentumEmaFilterShort
+    => true
+
+// === RSI过滤条件 ===
+getRSILongCondition() =>
+    condition = switch rsiFilterMode
+        "超买超卖" => prevRsiValue < rsiOverbought
+        "趋势方向" => rsiValue > rsiValue[1] and prevRsiValue < 50
+        "金叉死叉" => rsiValue > rsiValue[1] and rsiValue[1] <= rsiValue[2] and rsiValue[2] > rsiValue[3]
+        "背离检测" => close[1] <= ta.lowest(close, 5)[1] and rsiValue >= ta.lowest(rsiValue, 5)[1]
+        => true
+    condition
+
+getRSIShortCondition() =>
+    condition = switch rsiFilterMode
+        "超买超卖" => prevRsiValue > rsiOversold
+        "趋势方向" => rsiValue < rsiValue[1] and prevRsiValue > 50
+        "金叉死叉" => rsiValue < rsiValue[1] and rsiValue[1] >= rsiValue[2] and rsiValue[2] < rsiValue[3]
+        "背离检测" => close[1] >= ta.highest(close, 5)[1] and rsiValue <= ta.highest(rsiValue, 5)[1]
+        => true
+    condition
+
+rsiLongCondition = not useRSIFilter or getRSILongCondition()
+rsiShortCondition = not useRSIFilter or getRSIShortCondition()
+
+// === Range Filter计算 ===
+smoothrng(x, t, m) =>
+    wper = (t * 2) - 1
+    avrng = ta.ema(math.abs(x - x[1]), t)
+    smoothrng = ta.ema(avrng, wper) * m
+    smoothrng
+
+smrng = smoothrng(src, per, mult)
+
+rngfilt(x, r) =>
+    rngfilt = x
+    rngfilt := x > nz(rngfilt[1]) ? ((x - r) < nz(rngfilt[1]) ? nz(rngfilt[1]) : (x - r)) : ((x + r) > nz(rngfilt[1]) ? nz(rngfilt[1]) : (x + r))
+    rngfilt
+
+filt = rngfilt(src, smrng)
+
+var float upward = 0.0
+upward := filt > filt[1] ? nz(upward[1]) + 1 : filt < filt[1] ? 0 : nz(upward[1])
+
+var float downward = 0.0
+downward := filt < filt[1] ? nz(downward[1]) + 1 : filt > filt[1] ? 0 : nz(downward[1])
+
+hband = filt + smrng
+lband = filt - smrng
+filtcolor = upward > 0 ? color.lime : downward > 0 ? color.red : color.orange
+
+// === 交易信号 ===
+longCond = ((src > filt) and (src > src[1]) and (upward > 0)) or ((src > filt) and (src < src[1]) and (upward > 0))
+shortCond = ((src < filt) and (src < src[1]) and (downward > 0)) or ((src < filt) and (src > src[1]) and (downward > 0))
+
+var bool lastLongCond = false
+var bool lastShortCond = false
+
+newLongSignal = longCond and not lastLongCond[1]
+newShortSignal = shortCond and not lastShortCond[1]
+
+lastLongCond := longCond
+lastShortCond := shortCond
+
+// === 最终交易条件 ===
+finalLongCond = newLongSignal and emaFilterLong and rsiLongCondition
+finalShortCond = newShortSignal and emaFilterShort and rsiShortCondition
+
+var int CondIni = 0
+CondIni := finalLongCond ? 1 : finalShortCond ? -1 : CondIni[1]
+
+longCondition = finalLongCond and CondIni[1] == -1
+shortCondition = finalShortCond and CondIni[1] == 1
+
+// === 可视化 ===
+plot(showBaseEmaLine ? baseEmaValue : na, color=color.blue, linewidth=2, title="基础EMA")
+plot(showMomentumEmaLine ? momentumEmaValue : na, color=color.red, linewidth=1, title="动量EMA")
+
+filtplot = plot(filt, color=filtcolor, linewidth=3, title="Range Filter")
+hbandplot = plot(hband, color=color.aqua, display=display.none)
+lbandplot = plot(lband, color=color.fuchsia, display=display.none)
+fill(hbandplot, filtplot, color=color.new(color.aqua, 85), title="High Target Range")
+fill(lbandplot, filtplot, color=color.new(color.fuchsia, 85), title="Low Target Range")
+
+plotshape(longCondition,
+     title="买入信号",
+     text="BUY",
+     style=shape.labelup,
+     location=location.belowbar,
+     color=color.green,
+     size=size.normal,
+     textcolor=color.white)
+
+plotshape(shortCondition,
+     title="卖出信号",
+     text="SELL",
+     style=shape.labeldown,
+     location=location.abovebar,
+     color=color.red,
+     size=size.normal,
+     textcolor=color.white)
+
+// === 策略执行 (RF Pro风格 - 使用open价格) ===
+if longCondition
+    // 重置所有状态
+    isTp1ExecutedLong := false
+    isTp2ExecutedLong := false
+    isTp3ExecutedLong := false
+
+    // 关键修改：使用open价格，更接近实盘
+    longEntryPrice := open
+    longInitialStop := open * (1 - slPercent)
+
+    // 重置移动止盈状态
+    trailingActiveLong := false
+    highSinceEntryLong := open
+    trailingStopPriceLong := na
+
+    // 如果有反向持仓，先平仓
+    if strategy.position_size < 0
+        strategy.close_all(comment="平空反多")
+
+    strategy.entry("Long", strategy.long, comment="Long")
+
+if shortCondition
+    // 重置所有状态
+    isTp1ExecutedShort := false
+    isTp2ExecutedShort := false
+    isTp3ExecutedShort := false
+
+    // 关键修改：使用open价格
+    shortEntryPrice := open
+    shortInitialStop := open * (1 + slPercent)
+
+    // 重置移动止盈状态
+    trailingActiveShort := false
+    lowSinceEntryShort := open
+    trailingStopPriceShort := na
+
+    // 如果有反向持仓，先平仓
+    if strategy.position_size > 0
+        strategy.close_all(comment="平多反空")
+
+    strategy.entry("Short", strategy.short, comment="Short")
+
+// === ATR移动止盈逻辑 (完全模仿RF Pro) ===
+if strategy.position_size > 0 and not na(longEntryPrice)
+    // 更新最高价（使用已确认的high[1]）
+    if high[1] > nz(highSinceEntryLong, high[1])
+        highSinceEntryLong := high[1]
+
+    // 检查是否触发移动止盈
+    if useTrailing and not na(prevAtrValue)
+        if highSinceEntryLong >= longEntryPrice + (prevAtrValue * trailTriggerMult)
+            trailingActiveLong := true
+
+    // 计算ATR止盈价格 - RF Pro风格：仅当激活时更新
+    if useTrailing and trailingActiveLong and not na(prevAtrValue)
+        float atrStopPrice = highSinceEntryLong - (prevAtrValue * trailOffsetMult)
+
+        if na(trailingStopPriceLong) or atrStopPrice > trailingStopPriceLong
+            trailingStopPriceLong := atrStopPrice
+
+if strategy.position_size < 0 and not na(shortEntryPrice)
+    // 更新最低价
+    if low[1] < nz(lowSinceEntryShort, low[1])
+        lowSinceEntryShort := low[1]
+
+    // 检查是否触发移动止盈
+    if useTrailing and not na(prevAtrValue)
+        if lowSinceEntryShort <= shortEntryPrice - (prevAtrValue * trailTriggerMult)
+            trailingActiveShort := true
+
+    // 计算ATR止盈价格 - RF Pro风格
+    if useTrailing and trailingActiveShort and not na(prevAtrValue)
+        float atrStopPriceS = lowSinceEntryShort + (prevAtrValue * trailOffsetMult)
+
+        if na(trailingStopPriceShort) or atrStopPriceS < trailingStopPriceShort
+            trailingStopPriceShort := atrStopPriceS
+
+// === 显示移动止盈线 ===
+plot(showTrailingStopLine and not na(trailingStopPriceLong) ? trailingStopPriceLong : na,
+     color=color.new(color.orange, 0),
+     linewidth=1,
+     title="多头移动止盈线",
+     style=plot.style_linebr)
+
+plot(showTrailingStopLine and not na(trailingStopPriceShort) ? trailingStopPriceShort : na,
+     color=color.new(color.orange, 0),
+     linewidth=1,
+     title="空头移动止盈线",
+     style=plot.style_linebr)
+
+// === 分批止盈执行 ===
+if usePartialTP and strategy.position_size > 0 and not na(currentProfitPctLong) and not na(longEntryPrice)
+    if useTP1 and not isTp1ExecutedLong and currentProfitPctLong >= tp1Trigger
+        strategy.close("Long", qty_percent=tp1Qty / 100, comment="TP1: " + str.tostring(tp1Trigger) + "%")
+        isTp1ExecutedLong := true
+
+    if useTP2 and not isTp2ExecutedLong and currentProfitPctLong >= tp2Trigger
+        strategy.close("Long", qty_percent=tp2Qty / 100, comment="TP2: " + str.tostring(tp2Trigger) + "%")
+        isTp2ExecutedLong := true
+
+    if useTP3 and not isTp3ExecutedLong and currentProfitPctLong >= tp3Trigger
+        strategy.close("Long", qty_percent=tp3Qty / 100, comment="TP3: " + str.tostring(tp3Trigger) + "%")
+        isTp3ExecutedLong := true
+
+if usePartialTP and strategy.position_size < 0 and not na(currentProfitPctShort) and not na(shortEntryPrice)
+    if useTP1 and not isTp1ExecutedShort and currentProfitPctShort >= tp1Trigger
+        strategy.close("Short", qty_percent=tp1Qty / 100, comment="TP1: " + str.tostring(tp1Trigger) + "%")
+        isTp1ExecutedShort := true
+
+    if useTP2 and not isTp2ExecutedShort and currentProfitPctShort >= tp2Trigger
+        strategy.close("Short", qty_percent=tp2Qty / 100, comment="TP2: " + str.tostring(tp2Trigger) + "%")
+        isTp2ExecutedShort := true
+
+    if useTP3 and not isTp3ExecutedShort and currentProfitPctShort >= tp3Trigger
+        strategy.close("Short", qty_percent=tp3Qty / 100, comment="TP3: " + str.tostring(tp3Trigger) + "%")
+        isTp3ExecutedShort := true
+
+// === 止损执行 (RF Pro风格 - 使用close_all，硬止损仅在未激活移动止盈时生效) ===
+if useStopLoss
+    // 多头止损
+    if strategy.position_size > 0
+        // ATR移动止盈触发
+        if useTrailing and not na(trailingStopPriceLong) and low[1] <= trailingStopPriceLong
+            strategy.close_all(comment="ATR移动止盈")
+            longEntryPrice := na
+            longInitialStop := na
+            trailingActiveLong := false
+            highSinceEntryLong := na
+            trailingStopPriceLong := na
+            isTp1ExecutedLong := false
+            isTp2ExecutedLong := false
+            isTp3ExecutedLong := false
+
+        // 硬止损 - 仅当移动止盈未激活时生效
+        else if not na(longInitialStop) and low[1] <= longInitialStop and not trailingActiveLong
+            strategy.close_all(comment="止损: " + str.tostring(slPercent * 100) + "%")
+            longEntryPrice := na
+            longInitialStop := na
+            trailingActiveLong := false
+            highSinceEntryLong := na
+            trailingStopPriceLong := na
+            isTp1ExecutedLong := false
+            isTp2ExecutedLong := false
+            isTp3ExecutedLong := false
+
+    // 空头止损
+    if strategy.position_size < 0
+        if useTrailing and not na(trailingStopPriceShort) and high[1] >= trailingStopPriceShort
+            strategy.close_all(comment="ATR移动止盈")
+            shortEntryPrice := na
+            shortInitialStop := na
+            trailingActiveShort := false
+            lowSinceEntryShort := na
+            trailingStopPriceShort := na
+            isTp1ExecutedShort := false
+            isTp2ExecutedShort := false
+            isTp3ExecutedShort := false
+
+        else if not na(shortInitialStop) and high[1] >= shortInitialStop and not trailingActiveShort
+            strategy.close_all(comment="止损: " + str.tostring(slPercent * 100) + "%")
+            shortEntryPrice := na
+            shortInitialStop := na
+            trailingActiveShort := false
+            lowSinceEntryShort := na
+            trailingStopPriceShort := na
+            isTp1ExecutedShort := false
+            isTp2ExecutedShort := false
+            isTp3ExecutedShort := false
+
+// === 在图表上显示信息 ===
+if barstate.islast
+    profitInfo = ""
+    if strategy.position_size > 0 and not na(longEntryPrice)
+        profitPct = (close[1] - longEntryPrice) / longEntryPrice * 100
+        profitInfo := "多头持仓盈利: " + str.tostring(profitPct, "#.##") + "%\n"
+        profitInfo := profitInfo + "TP1: " + (isTp1ExecutedLong ? "✓" : "✗") + " "
+        profitInfo := profitInfo + "TP2: " + (isTp2ExecutedLong ? "✓" : "✗") + " "
+        profitInfo := profitInfo + "TP3: " + (isTp3ExecutedLong ? "✓" : "✗")
+
+        if useTrailing
+            profitInfo := profitInfo + "\n移动止盈: " + (trailingActiveLong ? "已激活" : "未激活")
+            if trailingActiveLong and not na(trailingStopPriceLong)
+                profitInfo := profitInfo + " | 止盈线: $" + str.tostring(trailingStopPriceLong, "#.##")
+
+    else if strategy.position_size < 0 and not na(shortEntryPrice)
+        profitPct = (shortEntryPrice - close[1]) / shortEntryPrice * 100
+        profitInfo := "空头持仓盈利: " + str.tostring(profitPct, "#.##") + "%\n"
+        profitInfo := profitInfo + "TP1: " + (isTp1ExecutedShort ? "✓" : "✗") + " "
+        profitInfo := profitInfo + "TP2: " + (isTp2ExecutedShort ? "✓" : "✗") + " "
+        profitInfo := profitInfo + "TP3: " + (isTp3ExecutedShort ? "✓" : "✗")
+
+        if useTrailing
+            profitInfo := profitInfo + "\n移动止盈: " + (trailingActiveShort ? "已激活" : "未激活")
+            if trailingActiveShort and not na(trailingStopPriceShort)
+                profitInfo := profitInfo + " | 止盈线: $" + str.tostring(trailingStopPriceShort, "#.##")
+
+    else
+        profitInfo := "无持仓"
+
+    infoText = "策略状态：运行中\n" +
+               "EMA过滤：" + (useEmaFilter ? "已启用 (" + emaFilterMode + ")" : "已关闭") + "\n" +
+               "RSI过滤：" + (useRSIFilter ? "已启用 (" + rsiFilterMode + ")" : "已关闭") + "\n" +
+               "分批止盈：" + (usePartialTP ? "已启用" : "已关闭") + "\n" +
+               "止损：" + (useStopLoss ? str.tostring(slPercent * 100) + "%" : "未启用") + "\n" +
+               "ATR移动止盈：" + (useTrailing ? "已启用" : "已关闭") + "\n" +
+               profitInfo
+
+    label.new(bar_index, high * 1.02,
+         text=infoText,
+         color=color.new(color.blue, 80),
+         textcolor=color.white,
+         style=label.style_label_center,
+         yloc=yloc.abovebar,
+         size=size.normal)
+
+// === 显示RSI信息 ===
+if barstate.islast
+    rsiDisplay = "RSI: " + str.tostring(rsiValue, "#.##")
+    rsiColor = rsiValue > rsiOverbought ? color.red :
+               rsiValue < rsiOversold ? color.green :
+               color.blue
+
+    label.new(bar_index, low * 0.98,
+         text=rsiDisplay,
+         color=rsiColor,
+         textcolor=color.white,
+         style=label.style_label_center,
+         yloc=yloc.belowbar,
+         size=size.normal)
+
+// === 显示分批止盈水平线 ===
+if showPartialTPLevels and barstate.islast
+    if strategy.position_size > 0 and not na(longEntryPrice)
+        label.new(bar_index, tp1LongPrice,
+             text="TP1: " + str.tostring(tp1Trigger) + "%",
+             color=color.new(color.green, 0),
+             textcolor=color.white,
+             style=label.style_label_left,
+             size=size.small)
+
+        label.new(bar_index, tp2LongPrice,
+             text="TP2: " + str.tostring(tp2Trigger) + "%",
+             color=color.new(color.green, 0),
+             textcolor=color.white,
+             style=label.style_label_left,
+             size=size.small)
+
+        label.new(bar_index, tp3LongPrice,
+             text="TP3: " + str.tostring(tp3Trigger) + "%",
+             color=color.new(color.green, 0),
+             textcolor=color.white,
+             style=label.style_label_left,
+             size=size.small)
+
+    if strategy.position_size < 0 and not na(shortEntryPrice)
+        label.new(bar_index, tp1ShortPrice,
+             text="TP1: " + str.tostring(tp1Trigger) + "%",
+             color=color.new(color.red, 0),
+             textcolor=color.white,
+             style=label.style_label_left,
+             size=size.small)
+
+        label.new(bar_index, tp2ShortPrice,
+             text="TP2: " + str.tostring(tp2Trigger) + "%",
+             color=color.new(color.red, 0),
+             textcolor=color.white,
+             style=label.style_label_left,
+             size=size.small)
+
+        label.new(bar_index, tp3ShortPrice,
+             text="TP3: " + str.tostring(tp3Trigger) + "%",
+             color=color.new(color.red, 0),
+             textcolor=color.white,
+             style=label.style_label_left,
+             size=size.small)

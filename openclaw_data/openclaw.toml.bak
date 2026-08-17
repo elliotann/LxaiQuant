@@ -1,0 +1,17 @@
+{
+  "agents": {
+    "defaults": {
+      "workspace": "F:\\project\\lenzeto\\openclaw_data\\.openclaw\\workspace"
+    }
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "restart": true,
+    "ownerDisplay": "raw"
+  },
+  "meta": {
+    "lastTouchedVersion": "2026.2.26",
+    "lastTouchedAt": "2026-02-27T04:32:06.611Z"
+  }
+}

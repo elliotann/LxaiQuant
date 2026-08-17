@@ -1,0 +1,3 @@
+ALTER TABLE ai_trade_order
+ADD COLUMN price_type VARCHAR(16) DEFAULT NULL COMMENT '价格类型: LIMIT/MARKET';
+

@@ -1,0 +1,571 @@
+<template>
+  <div class="dashboard-overview">
+    <div class="stats-grid">
+      <!-- 总资产卡片 -->
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-title">总资产</div>
+          <el-icon class="stat-icon"><Wallet /></el-icon>
+        </div>
+        <div class="stat-value">{{ formatCurrency(stats.totalAssets) }}</div>
+        <div class="stat-change positive">
+          <el-icon><ArrowUp /></el-icon>
+          {{ stats.dailyChange }}% 今日
+        </div>
+      </div>
+
+      <!-- 可用余额卡片 -->
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-title">可用余额</div>
+          <el-icon class="stat-icon"><Money /></el-icon>
+        </div>
+        <div class="stat-value">
+          {{ formatCurrency(stats.availableBalance) }}
+        </div>
+        <div class="stat-subtitle">
+          占总资产
+          {{ ((stats.availableBalance / stats.totalAssets) * 100).toFixed(1) }}%
+        </div>
+      </div>
+
+      <!-- 今日盈亏卡片 -->
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-title">今日盈亏</div>
+          <el-icon class="stat-icon"><TrendCharts /></el-icon>
+        </div>
+        <div
+          class="stat-value"
+          :class="stats.dailyPnL >= 0 ? 'positive' : 'negative'"
+        >
+          {{ stats.dailyPnL >= 0 ? "+" : ""
+          }}{{ formatCurrency(stats.dailyPnL) }}
+        </div>
+        <div
+          class="stat-change"
+          :class="stats.dailyPnL >= 0 ? 'positive' : 'negative'"
+        >
+          {{ stats.dailyPnLPercent }}% 收益率
+        </div>
+      </div>
+
+      <!-- 累计盈亏卡片 -->
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-title">累计盈亏</div>
+          <el-icon class="stat-icon"><DataLine /></el-icon>
+        </div>
+        <div
+          class="stat-value"
+          :class="stats.totalPnL >= 0 ? 'positive' : 'negative'"
+        >
+          {{ stats.totalPnL >= 0 ? "+" : ""
+          }}{{ formatCurrency(stats.totalPnL) }}
+        </div>
+        <div
+          class="stat-change"
+          :class="stats.totalPnL >= 0 ? 'positive' : 'negative'"
+        >
+          {{ stats.totalPnLPercent }}% 收益率
+        </div>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <!-- 资产曲线图 -->
+      <AssetCurveChart />
+
+      <!-- 收益分布图 -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>收益分布</h3>
+          <el-tooltip content="各策略收益贡献" placement="top">
+            <el-icon class="help-icon"><QuestionFilled /></el-icon>
+          </el-tooltip>
+        </div>
+        <div class="chart-container">
+          <ProfitDistributionChart />
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-grid">
+      <MultiRobotEquityChart />
+
+      <!-- 最近活动 -->
+      <div class="activity-card">
+        <div class="card-header">
+          <h3>最近活动</h3>
+          <el-button size="small" text @click="refreshActivities">
+            <el-icon><Refresh /></el-icon>
+          </el-button>
+        </div>
+        <div class="activity-list">
+          <div
+            v-for="activity in recentActivities"
+            :key="activity.id"
+            class="activity-item"
+          >
+            <div class="activity-icon">
+              <el-icon :class="activity.type">
+                <component :is="getActivityIcon(activity.type)" />
+              </el-icon>
+            </div>
+            <div class="activity-content">
+              <div class="activity-title">{{ activity.title }}</div>
+              <div class="activity-description">{{ activity.description }}</div>
+              <div class="activity-time">
+                {{ formatTime(activity.timestamp) }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive, onMounted } from "vue";
+import { ElMessage } from "element-plus";
+import {
+  Wallet,
+  Money,
+  TrendCharts,
+  DataLine,
+  ArrowUp,
+  Refresh,
+  QuestionFilled,
+  VideoPlay,
+  Monitor,
+  Setting,
+  TrendCharts as TrendIcon,
+  Warning,
+} from "@element-plus/icons-vue";
+import AssetCurveChart from "@/components/charts/AssetCurveChart.vue";
+import ProfitDistributionChart from "@/components/charts/ProfitDistributionChart.vue";
+import MultiRobotEquityChart from "@/components/charts/MultiRobotEquityChart.vue";
+import { tradingApi } from "@/api";
+
+// 统计数据
+const stats = reactive({
+  totalAssets: 125430.5,
+  availableBalance: 45230.0,
+  dailyPnL: 580.25,
+  dailyPnLPercent: 0.47,
+  totalPnL: 12580.5,
+  totalPnLPercent: 11.2,
+  dailyChange: 0.47,
+});
+
+// 最近活动
+const recentActivities = ref([
+  {
+    id: "1",
+    type: "strategy",
+    title: "MA策略已启动",
+    description: "BTC/USDT 1小时线",
+    timestamp: new Date(Date.now() - 5 * 60 * 1000),
+  },
+  {
+    id: "2",
+    type: "trade",
+    title: "买入订单已成交",
+    description: "BTC/USDT 0.1 @ $45,230",
+    timestamp: new Date(Date.now() - 15 * 60 * 1000),
+  },
+  {
+    id: "3",
+    type: "system",
+    title: "数据同步完成",
+    description: "市场数据已更新",
+    timestamp: new Date(Date.now() - 30 * 60 * 1000),
+  },
+  {
+    id: "4",
+    type: "alert",
+    title: "风险预警",
+    description: "账户回撤达到警戒线",
+    timestamp: new Date(Date.now() - 45 * 60 * 1000),
+  },
+]);
+
+// 初始化
+onMounted(async () => {
+  await fetchSummary();
+  setInterval(async () => {
+    await fetchSummary();
+  }, 15000);
+});
+
+// 更新统计数据
+const fetchSummary = async () => {
+  try {
+    const resp = await tradingApi.getTradingSummary();
+    const result = resp && typeof resp === 'object' && 'data' in resp ? (resp as any).data : resp;
+    if (result) {
+      stats.totalAssets = Number((result as any).totalAssets ?? 0);
+      stats.availableBalance = Number((result as any).availableBalance ?? 0);
+      stats.dailyPnL = Number((result as any).dailyPnL ?? 0);
+      stats.totalPnL = Number((result as any).totalPnL ?? 0);
+      stats.dailyPnLPercent = Number((result as any).dailyPnLPercent ?? 0);
+      stats.totalPnLPercent = Number((result as any).totalPnLPercent ?? 0);
+      stats.dailyChange = stats.dailyPnLPercent;
+    }
+  } catch (e) {
+    console.error("加载交易汇总失败", e);
+  }
+};
+
+// 刷新活动
+const refreshActivities = () => {
+  ElMessage.success("活动列表已刷新");
+};
+
+// 格式化货币
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat("zh-CN", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+  }).format(amount);
+};
+
+// 格式化时间
+const formatTime = (timestamp: Date) => {
+  const now = new Date();
+  const diff = now.getTime() - timestamp.getTime();
+  const minutes = Math.floor(diff / (1000 * 60));
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (days > 0) {
+    return `${days}天前`;
+  } else if (hours > 0) {
+    return `${hours}小时前`;
+  } else if (minutes > 0) {
+    return `${minutes}分钟前`;
+  } else {
+    return "刚刚";
+  }
+};
+
+// 获取活动图标
+const getActivityIcon = (type: string) => {
+  const iconMap: Record<string, any> = {
+    strategy: VideoPlay,
+    trade: TrendIcon,
+    system: Setting,
+    alert: Warning,
+  };
+  return iconMap[type] || Monitor;
+};
+</script>
+
+<style scoped>
+.dashboard-overview {
+  padding: 20px;
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 统计卡片网格 */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.stat-card {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  padding: 20px;
+  transition: all 0.2s;
+}
+
+.stat-card:hover {
+  border-color: var(--border-glow-primary);
+  box-shadow: var(--glow-primary);
+}
+
+.stat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.stat-title {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.stat-icon {
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.stat-change {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-change.positive {
+  color: var(--positive-color);
+}
+
+.stat-change.negative {
+  color: var(--negative-color);
+}
+
+.stat-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* 图表网格 */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 16px;
+  min-height: 300px;
+}
+
+.chart-card {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.chart-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.chart-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.help-icon {
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.help-icon:hover {
+  color: var(--text-primary);
+}
+
+.chart-container {
+  flex: 1;
+  padding: 20px;
+  min-height: 250px;
+}
+
+/* 底部网格 */
+.bottom-grid {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 16px;
+  flex: 1;
+  min-height: 300px;
+}
+
+.bottom-grid > * {
+  min-width: 0;
+}
+
+/* 表现卡片 */
+.activity-card {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* 活动列表 */
+.activity-list {
+  flex: 1;
+  padding: 16px 20px;
+  overflow-y: auto;
+}
+
+.activity-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: var(--bg-hover);
+  flex-shrink: 0;
+}
+
+.activity-icon .el-icon {
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+.activity-icon.strategy .el-icon {
+  color: var(--market-volatile);
+}
+
+.activity-icon.trade .el-icon {
+  color: var(--market-up);
+}
+
+.activity-icon.system .el-icon {
+  color: var(--btn-primary);
+}
+
+.activity-icon.alert .el-icon {
+  color: var(--market-down);
+}
+
+.activity-content {
+  flex: 1;
+}
+
+.activity-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.activity-description {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.activity-time {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* 通用样式 */
+.positive {
+  color: var(--market-up) !important;
+}
+
+.negative {
+  color: var(--market-down) !important;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 滚动条样式 */
+.activity-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.activity-list::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+.activity-list::-webkit-scrollbar-thumb {
+  background: var(--btn-primary);
+  border-radius: 3px;
+}
+
+/* Element Plus 组件样式覆盖 */
+:deep(.el-radio-group) {
+  background: var(--surface-elevated);
+}
+
+:deep(.el-radio-button__inner) {
+  background: var(--surface-elevated);
+  border-color: var(--border-primary);
+  color: var(--text-secondary);
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+:deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
+  background: var(--btn-primary);
+  border-color: var(--btn-primary);
+  color: white;
+}
+
+:deep(.el-tag) {
+  border: none;
+}
+
+:deep(.el-button) {
+  font-size: 12px;
+  height: 24px;
+  padding: 0 8px;
+}
+</style>

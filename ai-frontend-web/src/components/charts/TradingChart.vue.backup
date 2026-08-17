@@ -1,0 +1,1499 @@
+<template>
+  <div class="kline-view">
+    <!-- 顶部工具栏 -->
+    <div class="kline-header">
+      <!-- 第一行：交易对 + 机器人选择 -->
+      <div class="header-top">
+        <!-- 交易对选择 -->
+        <div class="symbol-selector-wrapper">
+          <label class="selector-label">交易对:</label>
+          <el-select
+            v-model="selectedSymbol"
+            placeholder="选择交易对"
+            size="medium"
+            @change="onSymbolChange"
+            style="width: 200px;"
+          >
+            <el-option-group label="现货交易">
+              <el-option label="BTC/USDT" value="BTC/USDT" />
+              <el-option label="ETH/USDT" value="ETH/USDT" />
+              <el-option label="BNB/USDT" value="BNB/USDT" />
+              <el-option label="ADA/USDT" value="ADA/USDT" />
+              <el-option label="DOT/USDT" value="DOT/USDT" />
+            </el-option-group>
+            <el-option-group label="合约交易">
+              <el-option label="BTC-USDT-SWAP" value="BTC-USDT-SWAP" />
+              <el-option label="ETH-USDT-SWAP" value="ETH-USDT-SWAP" />
+            </el-option-group>
+          </el-select>
+
+          <!-- 价格显示 -->
+          <div class="price-display">
+            <span class="price" :class="currentPriceChangeClass">
+              ${{ formatPrice(currentPrice || 0) }}
+            </span>
+            <span class="change" :class="currentPriceChangeClass">
+              {{ priceChangePercent }}%
+            </span>
+      </div>
+        </div>
+
+        <!-- 机器人选择 -->
+        <div class="robot-selector-wrapper">
+          <label class="selector-label">机器人:</label>
+          <el-select
+            v-model="selectedRobot"
+            placeholder="请选择机器人"
+            size="medium"
+            @change="onRobotChange"
+            :loading="robotsLoading"
+            style="width: 200px;"
+          >
+            <el-option value="" label="请选择机器人" />
+            <el-option
+              v-for="robot in robots"
+              :key="robot.id"
+              :value="robot.id"
+              :label="robot.name"
+            />
+          </el-select>
+
+          <!-- 会员配置选择 -->
+          <div class="member-config-selector" v-if="selectedRobot">
+            <label class="selector-label">会员配置:</label>
+            <el-select
+              v-model="selectedMemberConfig"
+              placeholder="请选择会员配置"
+              size="medium"
+              @change="onMemberConfigChange"
+              :loading="memberConfigsLoading"
+              style="width: 220px;"
+            >
+              <el-option value="" label="请选择会员配置" />
+              <el-option
+                v-for="config in memberConfigs"
+                :key="config.id"
+                :value="config.id"
+                :label="`${config.memberName || config.memberId} / ${config.apiName || config.memberPlatform}`"
+              />
+            </el-select>
+            <span v-if="memberConfigsLoading" class="loading-text">加载中...</span>
+            <span v-else-if="memberConfigs && memberConfigs.length === 0" class="empty-text">暂无会员配置</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第二行：时间周期 + 技术指标 + 工具栏 -->
+      <div class="header-toolbar">
+        <!-- 时间周期选择 -->
+        <div class="toolbar-group">
+          <span class="toolbar-label">周期:</span>
+        <el-button-group>
+          <el-button
+            v-for="timeframe in timeframes"
+            :key="timeframe.value"
+            :type="currentTimeframe === timeframe.value ? 'primary' : 'default'"
+            size="small"
+            @click="changeTimeframe(timeframe.value)"
+          >
+            {{ timeframe.label }}
+          </el-button>
+        </el-button-group>
+    </div>
+
+        <!-- 技术指标选择 -->
+        <div class="toolbar-group">
+          <span class="toolbar-label">技术指标:</span>
+          <el-dropdown trigger="click" @command="onIndicatorSelect">
+            <el-button size="small">
+              指标选择
+              <el-icon class="el-icon--right">
+                <ArrowDown />
+              </el-icon>
+            </el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="boll">BOLL指标</el-dropdown-item>
+                <el-dropdown-item command="ma">移动平均线</el-dropdown-item>
+                <el-dropdown-item command="rsi">RSI指标</el-dropdown-item>
+                <el-dropdown-item command="macd">MACD指标</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+      </div>
+
+             <!-- 时间跳转 -->
+             <div class="toolbar-group">
+               <span class="toolbar-label">时间跳转:</span>
+               <el-date-picker
+                 v-model="jumpTime"
+                 type="datetime"
+                 placeholder="选择时间"
+                 format="YYYY-MM-DD HH:mm:ss"
+                 value-format="YYYY-MM-DD HH:mm:ss"
+                 style="width: 180px; margin-right: 8px;"
+            size="small"
+               />
+          <el-button
+                 type="primary"
+            size="small"
+                 :loading="jumpTimeLoading"
+                 @click="handleTimeJump"
+          >
+                 跳转
+          </el-button>
+             </div>
+
+             <!-- 手动加载最新数据 -->
+             <div class="toolbar-group">
+          <el-button
+                 type="info"
+            size="small"
+                 :loading="isLoadingLatestData"
+                 @click="loadLatestData"
+          >
+                 加载最新数据
+          </el-button>
+             </div>
+
+        <!-- 工具栏 -->
+        <div class="toolbar-group">
+          <el-button size="small" @click="resetZoom">
+            <el-icon><Aim /></el-icon>
+          </el-button>
+          <el-button size="small" @click="takeScreenshot">
+            <el-icon><Camera /></el-icon>
+          </el-button>
+          <el-button size="small" @click="toggleFullscreen">
+            <el-icon><FullScreen /></el-icon>
+          </el-button>
+      </div>
+      </div>
+    </div>
+
+    <!-- 主要内容区域 -->
+    <div class="main-content">
+      <!-- 左侧K线图区域 -->
+      <div class="chart-section">
+        <!-- 图表区域 -->
+        <div class="chart-container" ref="chartContainer">
+          <div ref="chartElement" class="chart"></div>
+
+          <!-- 加载状态 -->
+          <div v-if="loading" class="chart-loading">
+            <el-icon class="loading-icon">
+              <Loading />
+            </el-icon>
+            <p>加载图表数据中...</p>
+      </div>
+
+          <!-- 历史数据加载指示器 -->
+          <div v-if="isLoadingMoreData" class="history-loading">
+            <el-icon class="loading-icon">
+              <Loading />
+            </el-icon>
+            <p>加载历史数据...</p>
+      </div>
+
+          <!-- 最新数据加载指示器 -->
+          <div v-if="isLoadingLatestData" class="latest-loading">
+            <el-icon class="loading-icon">
+              <Loading />
+            </el-icon>
+            <p>加载最新数据...</p>
+      </div>
+    </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from "vue";
+import { createChart } from 'lightweight-charts';
+import { ElMessage } from 'element-plus';
+import {
+  Loading,
+  FullScreen,
+  Aim,
+  Camera,
+  ArrowDown,
+} from "@element-plus/icons-vue";
+import { getKlineChartData } from '@/api/trading';
+
+// Props定义
+interface Props {
+  title?: string;
+  symbol?: string;
+  height?: number;
+  realtime?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  title: "K线图表",
+  symbol: "BTC/USDT",
+  height: 400,
+  realtime: false,
+});
+
+// 时间周期选项 - 与KlineNew.vue保持一致
+const timeframes = [
+  { label: "1分钟", value: "1m" },
+  { label: "3分钟", value: "3m" },
+  { label: "5分钟", value: "5m" },
+  { label: "15分钟", value: "15m" },
+  { label: "30分钟", value: "30m" },
+  { label: "1小时", value: "1h" },
+  { label: "4小时", value: "4h" },
+  { label: "1天", value: "1d" },
+];
+
+// 响应式数据
+const loading = ref(false);
+const currentTimeframe = ref("1h");
+const selectedSymbol = ref(props.symbol || "BTC/USDT");
+const currentPrice = ref(0);
+const priceChangePercent = ref("0.00");
+
+// 机器人相关
+const selectedRobot = ref("");
+const robots = ref([]);
+const robotsLoading = ref(false);
+const selectedRobotInfo = ref(null);
+
+// 会员配置相关
+const memberConfigs = ref([]);
+const memberConfigsLoading = ref(false);
+const selectedMemberConfig = ref("");
+const selectedMemberConfigInfo = ref(null);
+
+// 图表相关变量
+let chart: any = null;
+let candlestickSeries: any = null;
+let visibleRangeSubscription: any = null;
+
+// 拖动节流控制
+let lastDragTime = 0;
+const DRAG_THROTTLE_MS = 500; // 500ms节流
+
+// 数据加载相关
+const isLoadingMoreData = ref(false);
+const hasMoreData = ref(true);
+const earliestDataTime = ref<number | null>(null);
+const latestDataTime = ref<number | null>(null);
+const isLoadingLatestData = ref(false);
+
+// 拖动提示相关
+const showDragHint = ref(false);
+const dragHintText = ref('');
+
+// 时间跳转相关
+const jumpTime = ref('');
+const jumpTimeLoading = ref(false);
+
+// DOM引用
+const chartContainer = ref<HTMLElement>();
+const chartElement = ref<HTMLElement>();
+
+// 计算属性
+const currentPriceChangeClass = computed(() => {
+  const change = parseFloat(priceChangePercent.value);
+  return change > 0 ? 'positive' : change < 0 ? 'negative' : 'neutral';
+});
+
+// 生成模拟K线数据
+const generateMockKlineData = (count: number = 100) => {
+  const data = [];
+  const now = Math.floor(Date.now() / 1000);
+  let price = 50000; // 起始价格
+
+  for (let i = 0; i < count; i++) {
+    const time = now - (count - i) * 60; // 每分钟一条数据
+    const volatility = 0.02; // 波动率
+    const change = (Math.random() - 0.5) * 2 * volatility * price;
+
+    const open = price;
+    const close = price + change;
+    const high = Math.max(open, close) + Math.random() * volatility * price * 0.5;
+    const low = Math.min(open, close) - Math.random() * volatility * price * 0.5;
+    const volume = Math.random() * 100 + 50;
+
+    data.push({
+      time,
+      open,
+      high,
+      low,
+      close,
+      volume
+    });
+
+    price = close; // 更新价格为收盘价
+  }
+
+  return data;
+};
+
+// 时间周期映射到后端枚举
+const mapTimeframeToEnum = (timeframe: string): string => {
+  const mapping: Record<string, string> = {
+    '1m': 'OKXMIN1',
+    '5m': 'OKXMIN5',
+    '15m': 'OKXMIN15',
+    '1h': 'OKXMIN60',
+    '4h': 'OKX4HOUR',
+    '1d': 'OKX1D'
+  };
+  return mapping[timeframe] || 'OKXMIN1'; // 默认返回1分钟
+};
+
+// 获取K线数据
+const fetchKlineData = async () => {
+  try {
+    // 处理symbol格式：合约交易对已经是"-"格式，现货交易对需要把"/"换成"-"
+    const symbol = selectedSymbol.value.includes('-SWAP')
+      ? selectedSymbol.value  // 合约交易对已经是正确格式
+      : selectedSymbol.value.replace('/', '-'); // 现货交易对把"/"换成"-"
+
+    const response = await getKlineChartData({
+      symbol: symbol,
+      interval: mapTimeframeToEnum(currentTimeframe.value),
+      limit: 100
+    });
+
+    console.log('API响应:', response);
+    console.log('响应数据类型:', typeof response);
+    console.log('响应数据结构:', Object.keys(response || {}));
+
+    // 检查API响应格式 - 支持多种可能的格式
+    let klineData = null;
+
+    if (response && response.data) {
+      console.log('response.data 类型:', typeof response.data);
+      console.log('response.data 结构:', response.data);
+
+      // 情况1: response.data 直接是数组
+      if (Array.isArray(response.data)) {
+        console.log('使用数组格式数据:', response.data.length, '条记录');
+        klineData = response.data;
+      }
+      // 情况2: response.data.data 是数组
+      else if (response.data.data && Array.isArray(response.data.data)) {
+        console.log('使用嵌套格式数据:', response.data.data.length, '条记录');
+        klineData = response.data.data;
+      }
+      // 情况3: response.data 是对象，包含数组字段
+      else if (typeof response.data === 'object') {
+        // 尝试查找可能的数组字段
+        const possibleArrayKeys = ['data', 'list', 'result', 'items', 'records'];
+        for (const key of possibleArrayKeys) {
+          if (response.data[key] && Array.isArray(response.data[key])) {
+            console.log(`找到数组字段 ${key}:`, response.data[key].length, '条记录');
+            klineData = response.data[key];
+            break;
+          }
+        }
+      }
+    }
+
+    console.log('解析到的klineData:', klineData);
+    console.log('klineData长度:', klineData ? klineData.length : 'null');
+
+    if (klineData && klineData.length > 0) {
+      console.log('开始转换数据格式...');
+      console.log('klineData样例:', klineData[0]);
+
+      try {
+        // 转换API数据格式为lightweight-charts需要的格式
+        const formattedData = klineData.map((item, index) => {
+          // 支持多种时间戳格式
+          let timestamp = item.timestamp || item.time || item.t || item.timestampMs;
+          if (typeof timestamp === 'string') {
+            timestamp = parseInt(timestamp);
+          }
+
+          // 处理毫秒级时间戳
+          if (timestamp > 1e12) { // 如果是毫秒级时间戳
+            timestamp = Math.floor(timestamp / 1000);
+          }
+
+          const convertedItem = {
+      time: timestamp,
+            open: parseFloat(item.open || item.o),
+            high: parseFloat(item.high || item.h),
+            low: parseFloat(item.low || item.l),
+            close: parseFloat(item.close || item.c),
+            volume: parseFloat(item.volume || item.v || item.vol || 0)
+          };
+
+          // 每10条数据打印一次转换结果，避免日志过多
+          if (index < 3 || index % 10 === 0) {
+            console.log(`转换第${index}条数据:`, {
+              original: { timestamp: item.timestamp, open: item.open, close: item.close },
+              converted: convertedItem
+            });
+          }
+
+          return convertedItem;
+        });
+
+        console.log('✅ 数据转换完成:', formattedData.length, '条记录');
+        console.log('第一条转换后的数据:', formattedData[0]);
+        console.log('最后一条转换后的数据:', formattedData[formattedData.length - 1]);
+
+        // 验证转换后的数据
+        const isValidData = formattedData.every(item =>
+          item.time && typeof item.time === 'number' &&
+          typeof item.open === 'number' && typeof item.high === 'number' &&
+          typeof item.low === 'number' && typeof item.close === 'number'
+        );
+
+        if (!isValidData) {
+          console.error('❌ 数据验证失败，包含无效数据');
+          console.log('问题数据样例:', formattedData.find(item => !item.time || typeof item.time !== 'number'));
+          return generateMockKlineData();
+        }
+
+        console.log('✅ 数据验证通过，返回真实数据');
+        return formattedData;
+      } catch (convertError) {
+        console.error('❌ 数据转换失败:', convertError);
+        console.log('原始数据样例:', klineData[0]);
+        return generateMockKlineData();
+      }
+    } else {
+      // API返回空数据，使用模拟数据
+      console.log('获取真实数据失败，使用模拟数据 - klineData为空或长度为0');
+      console.log('完整响应:', JSON.stringify(response, null, 2));
+      return generateMockKlineData();
+    }
+  } catch (error) {
+    console.warn('获取K线数据失败，使用模拟数据:', error);
+    return generateMockKlineData();
+  }
+};
+
+// 初始化图表
+const initChart = async () => {
+  await nextTick();
+
+
+  if (!chartElement.value) {
+    console.error('chartElement不存在，无法初始化图表');
+    return;
+  }
+
+  // 清理之前的图表实例
+  if (chart) {
+    chart.remove();
+    chart = null;
+    candlestickSeries = null;
+  }
+
+  try {
+    loading.value = true;
+
+    // 获取数据
+    const klineData = await fetchKlineData();
+
+    // 创建lightweight-charts实例 - 使用容器实际宽度
+    console.log('创建图表，DOM元素:', chartElement.value);
+    console.log('容器宽度:', chartElement.value?.clientWidth, '高度:', chartElement.value?.clientHeight);
+
+    const containerWidth = chartElement.value?.clientWidth || 800;
+    const containerHeight = chartElement.value?.clientHeight || 400;
+
+      chart = createChart(chartElement.value, {
+      width: containerWidth,
+      height: containerHeight,
+        layout: {
+        backgroundColor: 'transparent',
+        textColor: '#333333',
+        fontSize: 12,
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Trebuchet MS", Roboto, Ubuntu, sans-serif'
+        },
+        grid: {
+        vertLines: { color: '#E0E3EB', style: 0, visible: true },
+        horzLines: { color: '#E0E3EB', style: 0, visible: true },
+        },
+        rightPriceScale: {
+        borderColor: '#D1D4DC',
+        scaleMargins: { top: 0.1, bottom: 0.1 },
+        autoScale: true,
+        entireTextOnly: false
+        },
+        timeScale: {
+        borderColor: '#D1D4DC',
+          timeVisible: true,
+          secondsVisible: false,
+        rightOffset: 0,
+        barSpacing: 6,
+        minBarSpacing: 0.5,
+        // 时间轴格式化 - 参考KlineNew.vue
+        tickMarkFormatter: (time, tickMarkType, locale) => {
+          // time: 时间戳（秒级）
+          // 将UTC时间戳转换为北京时间进行格式化
+          const date = new Date(time * 1000);
+
+          // 时间轴只显示时分（不显示日期）
+          // 使用北京时区格式化
+          const beijingTime = date.toLocaleString('zh-CN', {
+            timeZone: 'Asia/Shanghai',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          });
+
+          return beijingTime;
+        },
+        visible: true
+      },
+      localization: {
+        locale: 'zh-CN',
+        dateFormat: 'yyyy-MM-dd',
+        timeFormat: 'HH:mm:ss',
+        // 自定义时间格式化函数
+        timeFormatter: function(time) {
+          // time 是秒级时间戳
+          const date = new Date(time * 1000);
+          const fullDateTime = date.toLocaleString('zh-CN', {
+            timeZone: 'Asia/Shanghai',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+          }).replace(/\//g, '-');
+          return fullDateTime;
+        }
+      },
+    });
+
+    console.log('图表创建成功，chart对象:', chart);
+
+    // 创建K线系列
+    console.log('创建K线系列...');
+    candlestickSeries = chart.addCandlestickSeries({
+      upColor: '#26a69a',
+      downColor: '#ef5350',
+      borderVisible: false,
+      wickUpColor: '#26a69a',
+      wickDownColor: '#ef5350',
+    });
+    console.log('K线系列创建成功:', candlestickSeries);
+
+    // 设置K线数据
+    candlestickSeries.setData(klineData);
+
+    // 记录最早和最新的数据时间，用于无限加载
+    if (klineData.length > 0) {
+      earliestDataTime.value = klineData[0].time;
+      latestDataTime.value = klineData[klineData.length - 1].time;
+    }
+
+    // 适应视图
+    chart.timeScale().fitContent();
+
+    // 订阅可见时间范围变化，用于无限加载历史数据
+    setupInfiniteScroll();
+
+    // 多次延迟调整尺寸，确保DOM完全渲染
+    const resizeChart = () => {
+      if (chart && chartElement.value) {
+        const finalWidth = chartElement.value.clientWidth;
+        const finalHeight = chartElement.value.clientHeight;
+        console.log('调整图表大小:', finalWidth, 'x', finalHeight);
+        chart.resize(finalWidth, finalHeight);
+      }
+    };
+
+    // 立即调整一次
+    setTimeout(resizeChart, 50);
+    // 延迟调整，确保布局稳定
+    setTimeout(resizeChart, 200);
+    // 最后再调整一次，确保完全稳定
+    setTimeout(resizeChart, 500);
+
+  } catch (error) {
+    console.error('初始化图表失败:', error);
+    ElMessage.error('图表初始化失败');
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 切换时间周期
+const changeTimeframe = async (timeframe: string) => {
+  currentTimeframe.value = timeframe;
+  // 重置无限加载状态
+  hasMoreData.value = true;
+  earliestDataTime.value = null;
+  latestDataTime.value = null;
+  await initChart();
+};
+
+// 切换交易对
+const onSymbolChange = async () => {
+  // 重置无限加载状态
+  hasMoreData.value = true;
+  earliestDataTime.value = null;
+  latestDataTime.value = null;
+  // 更新props.symbol
+  if (props.symbol !== selectedSymbol.value) {
+    // 这里可以触发父组件更新，或者直接重新初始化
+    await initChart();
+  }
+};
+
+// 切换机器人
+const onRobotChange = async () => {
+  if (selectedRobot.value) {
+    // 加载机器人信息
+    selectedRobotInfo.value = robots.value.find(r => r.id === selectedRobot.value) || null;
+
+    // 加载会员配置
+    await loadMemberConfigs();
+  } else {
+    selectedRobotInfo.value = null;
+    memberConfigs.value = [];
+    selectedMemberConfig.value = "";
+    selectedMemberConfigInfo.value = null;
+  }
+};
+
+// 切换会员配置
+const onMemberConfigChange = () => {
+  if (selectedMemberConfig.value) {
+    selectedMemberConfigInfo.value = memberConfigs.value.find(c => c.id === selectedMemberConfig.value) || null;
+  } else {
+    selectedMemberConfigInfo.value = null;
+  }
+};
+
+// 加载机器人列表
+const loadRobots = async () => {
+  try {
+    robotsLoading.value = true;
+    // 这里应该调用API获取机器人列表
+    // 暂时使用模拟数据
+    robots.value = [
+      { id: "1", name: "趋势跟踪机器人" },
+      { id: "2", name: "均线策略机器人" },
+      { id: "3", name: "突破策略机器人" }
+    ];
+  } catch (error) {
+    console.error('加载机器人列表失败:', error);
+    ElMessage.error('加载机器人列表失败');
+  } finally {
+    robotsLoading.value = false;
+  }
+};
+
+// 加载会员配置
+const loadMemberConfigs = async () => {
+  if (!selectedRobot.value) return;
+
+  try {
+    memberConfigsLoading.value = true;
+    // 这里应该调用API获取会员配置列表
+    // 暂时使用模拟数据
+    memberConfigs.value = [
+      {
+        id: "1",
+        memberId: "member001",
+        memberName: "测试会员",
+        apiName: "OKX_API",
+        memberPlatform: "OKX"
+      },
+      {
+        id: "2",
+        memberId: "member002",
+        memberName: "实盘会员",
+        apiName: "BINANCE_API",
+        memberPlatform: "Binance"
+      }
+    ];
+  } catch (error) {
+    console.error('加载会员配置失败:', error);
+    ElMessage.error('加载会员配置失败');
+  } finally {
+    memberConfigsLoading.value = false;
+  }
+};
+
+// 技术指标选择处理
+const onIndicatorSelect = (command: string) => {
+  console.log('选择技术指标:', command);
+  ElMessage.info(`选择指标: ${command}`);
+  // 这里可以添加具体的指标处理逻辑
+};
+
+// 格式化价格
+const formatPrice = (price: number): string => {
+  if (price >= 1) {
+    return price.toFixed(2);
+  } else {
+    return price.toFixed(6);
+  }
+};
+
+// 重置缩放
+const resetZoom = () => {
+  if (chart) {
+    chart.timeScale().fitContent();
+  }
+};
+
+// 截图功能
+const takeScreenshot = () => {
+  if (chart) {
+    const canvas = chart.takeScreenshot();
+    const link = document.createElement('a');
+    link.download = `${props.symbol}_${currentTimeframe.value}_${Date.now()}.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+    ElMessage.success('截图已保存');
+  }
+};
+
+// 时间跳转处理
+const handleTimeJump = async () => {
+  if (!jumpTime.value) {
+    ElMessage.warning('请选择跳转时间');
+    return;
+  }
+
+  if (!chart) {
+    ElMessage.error('图表未初始化');
+    return;
+  }
+
+  jumpTimeLoading.value = true;
+
+  try {
+    // 将日期时间字符串转换为时间戳
+    const dateTime = new Date(jumpTime.value);
+    if (isNaN(dateTime.getTime())) {
+      ElMessage.error('时间格式错误');
+      return;
+    }
+
+    // 转换为UTC时间戳（秒）
+    const timestamp = Math.floor(dateTime.getTime() / 1000);
+
+    console.log('🕐 时间跳转:', {
+      选择的时间: jumpTime.value,
+      转换后的时间戳: timestamp,
+      UTC时间: new Date(timestamp * 1000).toISOString()
+    });
+
+    // 使用lightweight-charts的时间轴滚动功能
+    const timeScale = chart.timeScale();
+
+    // 滚动到指定时间点
+    timeScale.scrollToPosition(timestamp, true);
+
+    // 可选：添加闪烁效果来突出显示跳转的时间点
+    await addJumpFlashEffect(timestamp);
+
+    ElMessage.success('时间跳转成功');
+  } catch (error) {
+    console.error('时间跳转失败:', error);
+    ElMessage.error('时间跳转失败');
+  } finally {
+    jumpTimeLoading.value = false;
+  }
+};
+
+// 添加跳转闪烁效果
+const addJumpFlashEffect = async (timestamp: number) => {
+  if (!chart) return;
+
+  // 这里可以添加更复杂的闪烁效果
+  // 由于lightweight-charts的API限制，我们使用简单的视觉反馈
+  console.log('✨ 跳转到时间:', new Date(timestamp * 1000).toLocaleString());
+
+  // 如果跳转的时间点没有数据，可以考虑加载该时间段的数据
+  // 但目前先保持简单实现
+};
+
+// 全屏切换
+const toggleFullscreen = () => {
+  if (!document.fullscreenElement) {
+    chartContainer.value?.requestFullscreen();
+  } else {
+    document.exitFullscreen();
+  }
+};
+
+// 设置无限滚动加载历史数据
+const setupInfiniteScroll = () => {
+  if (!chart) return;
+
+  // 取消之前的订阅
+  if (visibleRangeSubscription) {
+    visibleRangeSubscription();
+    visibleRangeSubscription = null;
+  }
+
+  // 订阅可见时间范围变化
+  console.log('🎯 设置可见时间范围变化监听器...');
+  visibleRangeSubscription = chart.timeScale().subscribeVisibleTimeRangeChange((timeRange: any) => {
+    // 节流控制，避免频繁触发
+    const now = Date.now();
+    if (now - lastDragTime < DRAG_THROTTLE_MS) {
+      return; // 节流中，跳过
+    }
+    lastDragTime = now;
+
+    console.log('🎯 收到可见时间范围变化事件');
+    if (!timeRange) {
+      console.log('⚠️ timeRange 为空，跳过');
+      return;
+    }
+
+    const fromTime = timeRange.from;
+    const toTime = timeRange.to;
+    const earliestTime = earliestDataTime.value;
+
+    console.log('📊 可见时间范围变化:', {
+      from: new Date(fromTime * 1000).toLocaleString(),
+      to: new Date(toTime * 1000).toLocaleString(),
+      earliestData: earliestTime ? new Date(earliestTime * 1000).toLocaleString() : '无',
+      latestData: latestDataTime.value ? new Date(latestDataTime.value * 1000).toLocaleString() : '无'
+    });
+
+    // 向右拖拽（显示更早时间）：检查是否需要加载更多历史数据
+    // 当显示范围的开始时间小于或接近最早数据时，触发历史数据加载
+    console.log('🔍 全局状态检查:', {
+      hasMoreData: hasMoreData.value,
+      isLoadingMoreData: isLoadingMoreData.value,
+      isLoadingLatestData: isLoadingLatestData.value,
+      earliestTime: earliestTime,
+      latestTime: latestDataTime.value
+    });
+
+    const shouldLoadRight = !isLoadingMoreData.value && hasMoreData.value && earliestTime && fromTime <= earliestTime + 600;
+
+    if (shouldLoadRight) {
+      console.log('➡️ 检测到显示范围接近最早数据边界，触发历史数据加载');
+      console.log(`📊 显示范围: ${new Date(fromTime * 1000).toLocaleString()} ~ ${new Date(toTime * 1000).toLocaleString()}`);
+      console.log(`📊 图表最早数据时间: ${new Date(earliestTime * 1000).toLocaleString()}`);
+      console.log(`⏱️ 距离边界: ${(earliestTime - fromTime) / 60} 分钟`);
+
+      // 显示拖动提示
+      dragHintText.value = '正在加载历史数据...';
+      showDragHint.value = true;
+
+      loadMoreHistoricalData();
+    } else {
+      // 详细解释为什么不触发加载
+      console.log('🔍 向右拖拽条件分析:', {
+        shouldLoadRight,
+        hasMoreData: hasMoreData.value,
+        isLoadingMoreData: isLoadingMoreData.value,
+        hasEarliestTime: !!earliestTime,
+        fromTimeInRange: earliestTime ? fromTime <= earliestTime + 600 : false,
+        boundaryDistance: earliestTime ? (earliestTime - fromTime) / 60 : 0
+      });
+
+      if (!hasMoreData.value) {
+        console.log('💡 不触发加载：历史数据已全部加载完毕');
+      } else if (isLoadingMoreData.value) {
+        console.log('💡 不触发加载：正在加载历史数据中');
+      } else if (!earliestTime) {
+        console.log('💡 不触发加载：图表数据未初始化');
+      } else if (fromTime > earliestTime + 600) {
+        console.log('💡 不触发加载：显示范围还未接近最早数据边界');
+      }
+    }
+
+    // 向左拖拽（显示更晚时间）：检查是否需要加载最新数据
+    // 当显示范围包含或接近最新数据时，检查是否有更新的数据
+    const isViewingLatestData = latestDataTime.value && toTime >= latestDataTime.value - 3600; // 显示范围结束时间在最新数据1小时内
+    const shouldLoadLeft = !isLoadingLatestData.value &&
+                          latestDataTime.value &&
+                          isViewingLatestData; // 用户正在查看最新数据区域
+
+    if (shouldLoadLeft) { // 当用户查看最新数据区域时
+      console.log('⬅️ 检测到查看最新数据区域，触发最新数据加载检查');
+      console.log(`📊 显示范围结束时间: ${new Date(toTime * 1000).toLocaleString()}`);
+      console.log(`📊 图表最新数据时间: ${new Date(latestDataTime.value * 1000).toLocaleString()}`);
+
+      // 显示拖动提示
+      dragHintText.value = '正在检查最新数据...';
+      showDragHint.value = true;
+
+      loadLatestData();
+    } else {
+      // 只有在明确是查看最新区域的情况下才输出详细信息
+      if (latestDataTime.value && toTime >= latestDataTime.value - 7200) { // 在最新数据2小时内才输出详细信息
+        console.log('🔍 最新数据区域检查:', {
+          isViewingLatestData,
+          timeDiffToLatest: latestDataTime.value ? (toTime - latestDataTime.value) / 60 : 0
+        });
+      }
+    }
+
+    // 隐藏提示（如果没有触发加载）
+    if (!shouldLoadRight && !shouldLoadLeft) {
+      showDragHint.value = false;
+    }
+  });
+
+  console.log('✅ 已设置无限滚动监听');
+};
+
+// 加载更多历史数据
+const loadMoreHistoricalData = async () => {
+  if (isLoadingMoreData.value || !hasMoreData.value || !earliestDataTime.value) return;
+
+  try {
+    isLoadingMoreData.value = true;
+    console.log('🔄 开始加载更多历史数据...');
+
+    // 获取当前最早时间之前的数据
+    // 使用当前最早数据的时间戳作为endTime，确保获取更早的数据
+    console.log('📤 向右拖拽API调用参数:', {
+      symbol: selectedSymbol.value.replace('/', ''),
+      interval: mapTimeframeToEnum(currentTimeframe.value),
+      limit: 100,
+      endTime: earliestDataTime.value * 1000, // 基于图表最早数据时间，不是显示范围from时间
+      endTimeReadable: new Date(earliestDataTime.value * 1000).toLocaleString()
+    });
+
+    const response = await getKlineChartData({
+      symbol: selectedSymbol.value.replace('/', ''),
+      interval: mapTimeframeToEnum(currentTimeframe.value),
+      limit: 100,
+      endTime: earliestDataTime.value * 1000 // 转换为毫秒级时间戳，因为后端使用ID作为时间戳
+    });
+
+    let newKlineData = null;
+    if (response && response.data) {
+      if (Array.isArray(response.data)) {
+        newKlineData = response.data;
+      } else if (response.data.data && Array.isArray(response.data.data)) {
+        newKlineData = response.data.data;
+      }
+    }
+
+           if (newKlineData && newKlineData.length > 0) {
+             console.log(`✅ 加载到 ${newKlineData.length} 条历史数据`);
+
+             // 转换数据格式（后端返回的是毫秒级时间戳，需要转换为秒级）
+             const formattedData = newKlineData.map((item: any) => ({
+               time: Math.floor(item.timestamp / 1000), // 从毫秒转换为秒
+               open: parseFloat(item.open || item.o),
+               high: parseFloat(item.high || item.h),
+               low: parseFloat(item.low || item.l),
+               close: parseFloat(item.close || item.c),
+               volume: parseFloat(item.volume || item.v || item.vol || 0)
+             }));
+
+      // 更新到图表
+      if (candlestickSeries) {
+        // 获取当前数据
+        const currentData = candlestickSeries.data();
+
+        // 确保没有时间重叠：过滤掉时间晚于或等于当前最早时间的数据
+        const filteredNewData = formattedData.filter(item => item.time < earliestDataTime.value);
+
+        console.log(`🔍 过滤重叠数据: ${formattedData.length} -> ${filteredNewData.length}`);
+
+        if (filteredNewData.length === 0) {
+          console.log('⚠️ 没有新的历史数据，可能是数据已加载完毕');
+          hasMoreData.value = false;
+          return;
+        }
+
+        // 合并新旧数据（新数据在前）
+        const mergedData = [...filteredNewData, ...currentData];
+
+        // 验证合并后的数据是否按时间升序排列
+        const isSorted = mergedData.every((item, index) =>
+          index === 0 || item.time >= mergedData[index - 1].time
+        );
+
+        if (!isSorted) {
+          console.error('❌ 合并后的数据时间顺序错误');
+          console.log('问题数据样例:', mergedData.slice(0, 5));
+          return;
+        }
+
+        // 更新图表
+        candlestickSeries.setData(mergedData);
+
+        // 更新最早时间
+        earliestDataTime.value = filteredNewData[0].time;
+
+        console.log(`📊 图表数据更新完成，总共 ${mergedData.length} 条数据`);
+        console.log(`📅 最早时间更新为: ${new Date(earliestDataTime.value * 1000).toLocaleString()}`);
+      }
+
+      // 如果加载的数据少于请求的数量，可能没有更多数据了
+      if (newKlineData.length < 50) {
+        hasMoreData.value = false;
+        console.log('🏁 没有更多历史数据了');
+      }
+    } else {
+      hasMoreData.value = false;
+      console.log('🏁 没有更多历史数据了');
+    }
+
+  } catch (error) {
+    console.error('❌ 加载历史数据失败:', error);
+    hasMoreData.value = false;
+  } finally {
+    isLoadingMoreData.value = false;
+    // 隐藏拖动提示
+    setTimeout(() => {
+      showDragHint.value = false;
+    }, 1000); // 延迟1秒隐藏，让用户看到结果
+  }
+};
+
+// 加载最新数据（向右拖拽时）
+const loadLatestData = async () => {
+  if (isLoadingLatestData.value || !latestDataTime.value) return;
+
+  try {
+    isLoadingLatestData.value = true;
+    console.log('🔄 开始加载最新数据...');
+    console.log(`📊 当前图表状态: 最早=${earliestDataTime.value ? new Date(earliestDataTime.value * 1000).toLocaleString() : '无'}, 最新=${latestDataTime.value ? new Date(latestDataTime.value * 1000).toLocaleString() : '无'}`);
+    console.log(`📈 当前图表数据条数:`, candlestickSeries?.data().length || 0);
+
+    // 获取当前最新时间之后的数据
+    // 使用当前最新数据的时间戳+1作为startTime，确保获取更新的数据
+    console.log(`🔍 准备加载最新数据，当前最新时间: ${new Date(latestDataTime.value * 1000).toLocaleString()}`);
+
+    console.log('📤 向左拖拽API调用参数:', {
+      symbol: selectedSymbol.value.replace('/', ''),
+      interval: mapTimeframeToEnum(currentTimeframe.value),
+      limit: 50,
+      startTime: (latestDataTime.value + 1) * 1000, // 基于图表最新数据时间，不是显示范围to时间
+      startTimeReadable: new Date((latestDataTime.value + 1) * 1000).toLocaleString()
+    });
+
+    const response = await getKlineChartData({
+      symbol: selectedSymbol.value.replace('/', ''),
+      interval: mapTimeframeToEnum(currentTimeframe.value),
+      limit: 50, // 加载较少的新数据
+      startTime: (latestDataTime.value + 1) * 1000 // 转换为毫秒级时间戳，因为后端使用ID作为时间戳
+    });
+
+    let newKlineData = null;
+    if (response && response.data) {
+      if (Array.isArray(response.data)) {
+        newKlineData = response.data;
+      } else if (response.data.data && Array.isArray(response.data.data)) {
+        newKlineData = response.data.data;
+      }
+    }
+
+    if (newKlineData && newKlineData.length > 0) {
+      console.log(`✅ 加载到 ${newKlineData.length} 条最新数据`);
+      console.log(`📊 API原始数据样例:`, {
+        first: newKlineData[0],
+        last: newKlineData[newKlineData.length - 1]
+      });
+
+      // 转换数据格式（后端返回的是毫秒级时间戳，需要转换为秒级）
+      const formattedData = newKlineData.map((item: any) => ({
+        time: Math.floor(item.timestamp / 1000), // 从毫秒转换为秒
+        open: parseFloat(item.open || item.o),
+        high: parseFloat(item.high || item.h),
+        low: parseFloat(item.low || item.l),
+        close: parseFloat(item.close || item.c),
+        volume: parseFloat(item.volume || item.v || item.vol || 0)
+      }));
+
+      console.log(`🔄 转换后数据样例:`, {
+        first: formattedData[0],
+        last: formattedData[formattedData.length - 1]
+      });
+
+      // 更新到图表
+      if (candlestickSeries) {
+        // 获取当前数据
+        const currentData = candlestickSeries.data();
+
+        // 理论上API返回的数据都应该比当前最新时间更新，但为了安全起见还是过滤一下
+        const filteredNewData = formattedData.filter(item => item.time > latestDataTime.value);
+
+        console.log(`🔍 过滤重叠数据: ${formattedData.length} -> ${filteredNewData.length}`);
+        console.log(`📅 当前最新时间: ${new Date(latestDataTime.value * 1000).toLocaleString()}`);
+        console.log(`📊 新数据时间范围: ${formattedData.length > 0 ? new Date(formattedData[0].time * 1000).toLocaleString() : '无'} ~ ${formattedData.length > 0 ? new Date(formattedData[formattedData.length - 1].time * 1000).toLocaleString() : '无'}`);
+
+        if (filteredNewData.length === 0) {
+          console.log('⚠️ 没有新的最新数据，可能是数据库中确实没有更新的数据了');
+          console.log('💡 如果这是意外情况，请检查API查询参数和数据库数据');
+          return;
+        }
+
+        // 合并新旧数据（现有数据在前，新数据在后）
+        const mergedData = [...currentData, ...filteredNewData];
+
+        // 验证合并后的数据是否按时间升序排列
+        const isSorted = mergedData.every((item, index) =>
+          index === 0 || item.time >= mergedData[index - 1].time
+        );
+
+        if (!isSorted) {
+          console.error('❌ 合并后的数据时间顺序错误');
+          console.log('问题数据样例:', mergedData.slice(-5)); // 检查最后几条数据
+          return;
+        }
+
+        // 更新图表
+        candlestickSeries.setData(mergedData);
+
+        // 更新最新时间
+        latestDataTime.value = filteredNewData[filteredNewData.length - 1].time;
+
+        console.log(`📊 图表数据更新完成，总共 ${mergedData.length} 条数据`);
+        console.log(`📅 最新时间更新为: ${new Date(latestDataTime.value * 1000).toLocaleString()}`);
+      }
+    } else {
+      console.log('🏁 没有更新的数据');
+    }
+
+  } catch (error) {
+    console.error('❌ 加载最新数据失败:', error);
+  } finally {
+    isLoadingLatestData.value = false;
+    // 隐藏拖动提示
+    setTimeout(() => {
+      showDragHint.value = false;
+    }, 1000); // 延迟1秒隐藏，让用户看到结果
+  }
+};
+
+// 窗口大小改变时调整图表
+const handleResize = () => {
+  if (chart && chartElement.value) {
+    const newWidth = chartElement.value.clientWidth;
+    const newHeight = chartElement.value.clientHeight;
+    console.log('调整图表大小:', newWidth, 'x', newHeight);
+    chart.resize(newWidth, newHeight);
+  }
+};
+
+// 生命周期
+onMounted(async () => {
+  // 加载机器人列表
+  await loadRobots();
+
+  // 延迟初始化，确保DOM完全加载
+  setTimeout(() => {
+    initChart();
+  }, 100);
+
+  window.addEventListener('resize', handleResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize);
+  // 取消时间范围变化订阅
+  if (visibleRangeSubscription) {
+    visibleRangeSubscription();
+    visibleRangeSubscription = null;
+  }
+  if (chart) {
+    chart.remove();
+  }
+});
+
+// 暴露方法给父组件
+defineExpose({
+  initChart,
+  resetZoom,
+  changeTimeframe
+});
+</script>
+
+<style scoped>
+.kline-view {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.kline-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e0e3eb;
+  background: #ffffff;
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.header-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding-top: 8px;
+  border-top: 1px solid #f0f0f0;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toolbar-label {
+  color: #333333;
+  font-weight: 500;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.symbol-selector-wrapper,
+.robot-selector-wrapper,
+.timeframe-selector-wrapper,
+.toolbar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.member-config-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 16px;
+}
+
+.selector-label {
+  color: #333333;
+  font-weight: 500;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.price-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: 20px;
+}
+
+.price {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333333;
+}
+
+.price.positive {
+  color: #52c41a;
+}
+
+.price.negative {
+  color: #ff4d4f;
+}
+
+.price.neutral {
+  color: #333333;
+}
+
+.change {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.change.positive {
+  color: #52c41a;
+}
+
+.change.negative {
+  color: #ff4d4f;
+}
+
+.change.neutral {
+  color: #666666;
+}
+
+.main-content {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  width: 100%;
+}
+
+.chart-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #dee2e6;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.chart-container {
+  flex: 1;
+  position: relative;
+  background-color: #ffffff;
+  padding: 0;
+  width: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+.chart {
+  width: 100%;
+  height: 100%;
+}
+
+.chart-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-secondary);
+  z-index: 10;
+}
+
+.history-loading {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-secondary);
+  background: rgba(0, 0, 0, 0.7);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  z-index: 10;
+}
+
+.latest-loading {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-secondary);
+  background: rgba(0, 0, 0, 0.7);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  z-index: 10;
+}
+
+.loading-icon {
+  font-size: 24px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 拖动提示样式 */
+.drag-hint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.8);
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  z-index: 20;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.drag-hint .hint-icon {
+  font-size: 20px;
+  color: var(--primary-color);
+}
+
+.drag-hint p {
+  margin: 0;
+  font-weight: 500;
+}
+
+.member-config-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 16px;
+}
+
+.loading-text {
+  color: #666666;
+  font-size: 12px;
+}
+
+.empty-text {
+  color: #999999;
+  font-size: 12px;
+  font-style: italic;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .header-top {
+    gap: 16px;
+  }
+
+  .header-toolbar {
+    gap: 16px;
+  }
+
+  .symbol-selector-wrapper,
+  .robot-selector-wrapper {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .toolbar-group {
+    flex: 1;
+    justify-content: center;
+    min-width: 120px;
+  }
+
+  .price-display {
+    margin-left: 0;
+    justify-content: center;
+  }
+
+  .member-config-selector {
+    margin-left: 0;
+    margin-top: 8px;
+    width: 100%;
+  }
+}
+</style>

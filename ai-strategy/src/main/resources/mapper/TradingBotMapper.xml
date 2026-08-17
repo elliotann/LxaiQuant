@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.chain.ai.trade.engine.strategy.mapper.TradingBotMapper">
+
+    <!-- 分页查询交易机器人 -->
+    <select id="selectPage" resultType="com.chain.ai.trade.engine.strategy.entity.dos.TradingBot">
+        SELECT
+            id, bot_id, bot_name, user_id, account_id, exchange, strategy_id,
+            trading_pair, allocated_capital, current_capital, status,
+            start_time, last_signal_time, created_at, updated_at,
+            created_by, updated_by, configuration, statistics,
+            enabled, remark
+        FROM trading_bot
+        <where>
+            <if test="botName != null and botName != ''">
+                AND bot_name LIKE CONCAT('%', #{botName}, '%')
+            </if>
+            <if test="userId != null and userId != ''">
+                AND user_id = #{userId}
+            </if>
+            <if test="exchange != null and exchange != ''">
+                AND exchange = #{exchange}
+            </if>
+            <if test="tradingPair != null and tradingPair != ''">
+                AND trading_pair = #{tradingPair}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="strategyId != null and strategyId != ''">
+                AND strategy_id = #{strategyId}
+            </if>
+            <if test="accountId != null and accountId != ''">
+                AND account_id = #{accountId}
+            </if>
+        </where>
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 根据机器人ID查询 -->
+    <select id="selectByBotId" resultType="com.chain.ai.trade.engine.strategy.entity.dos.TradingBot">
+        SELECT
+            id, bot_id, bot_name, user_id, account_id, exchange, strategy_id,
+            trading_pair, allocated_capital, current_capital, status,
+            start_time, last_signal_time, created_at, updated_at,
+            created_by, updated_by, configuration, statistics,
+            enabled, remark
+        FROM trading_bot
+        WHERE bot_id = #{botId}
+    </select>
+
+    <!-- 根据用户ID查询机器人列表 -->
+    <select id="selectByUserId" resultType="com.chain.ai.trade.engine.strategy.entity.dos.TradingBot">
+        SELECT
+            id, bot_id, bot_name, user_id, account_id, exchange, strategy_id,
+            trading_pair, allocated_capital, current_capital, status,
+            start_time, last_signal_time, created_at, updated_at,
+            created_by, updated_by, configuration, statistics,
+            enabled, remark
+        FROM trading_bot
+        WHERE user_id = #{userId}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 根据策略ID查询机器人列表 -->
+    <select id="selectByStrategyId" resultType="com.chain.ai.trade.engine.strategy.entity.dos.TradingBot">
+        SELECT
+            id, bot_id, bot_name, user_id, account_id, exchange, strategy_id,
+            trading_pair, allocated_capital, current_capital, status,
+            start_time, last_signal_time, created_at, updated_at,
+            created_by, updated_by, configuration, statistics,
+            enabled, remark
+        FROM trading_bot
+        WHERE strategy_id = #{strategyId}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 根据账户ID查询机器人列表 -->
+    <select id="selectByAccountId" resultType="com.chain.ai.trade.engine.strategy.entity.dos.TradingBot">
+        SELECT
+            id, bot_id, bot_name, user_id, account_id, exchange, strategy_id,
+            trading_pair, allocated_capital, current_capital, status,
+            start_time, last_signal_time, created_at, updated_at,
+            created_by, updated_by, configuration, statistics,
+            enabled, remark
+        FROM trading_bot
+        WHERE account_id = #{accountId}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 根据状态查询机器人列表 -->
+    <select id="selectByStatus" resultType="com.chain.ai.trade.engine.strategy.entity.dos.TradingBot">
+        SELECT
+            id, bot_id, bot_name, user_id, account_id, exchange, strategy_id,
+            trading_pair, allocated_capital, current_capital, status,
+            start_time, last_signal_time, created_at, updated_at,
+            created_by, updated_by, configuration, statistics,
+            enabled, remark
+        FROM trading_bot
+        WHERE status = #{status}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 更新机器人状态 -->
+    <update id="updateStatus">
+        UPDATE trading_bot
+        SET status = #{status}, updated_at = NOW()
+        WHERE bot_id = #{botId}
+    </update>
+
+    <!-- 更新机器人统计信息 -->
+    <update id="updateStatistics">
+        UPDATE trading_bot
+        SET statistics = #{statistics}, updated_at = NOW()
+        WHERE bot_id = #{botId}
+    </update>
+
+    <!-- 批量更新机器人状态 -->
+    <update id="batchUpdateStatus">
+        UPDATE trading_bot
+        SET status = #{status}, updated_at = NOW()
+        WHERE bot_id IN
+        <foreach item="botId" collection="botIds" open="(" separator="," close=")">
+            #{botId}
+        </foreach>
+    </update>
+
+    <!-- 统计用户机器人数量 -->
+    <select id="countByUserId" resultType="int">
+        SELECT COUNT(*) FROM trading_bot WHERE user_id = #{userId}
+    </select>
+
+    <!-- 统计运行中的机器人数量 -->
+    <select id="countRunningBots" resultType="int">
+        SELECT COUNT(*) FROM trading_bot WHERE status = 'RUNNING'
+    </select>
+
+    <!-- 获取状态统计信息 -->
+    <select id="selectStatusStats" resultType="map">
+        SELECT
+            status,
+            COUNT(*) as count
+        FROM trading_bot
+        GROUP BY status
+    </select>
+
+</mapper>

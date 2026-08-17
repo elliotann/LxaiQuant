@@ -1,0 +1,787 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// Modified by Wall Street Trend Trader: RF Pro + ADX Only + AlgoAlpha Reversal + 3-Stage Partial TP
+// Integrated with 3Commas by Gemini
+// Added: Anti-Whipsaw Protection + Trend Following Re-entry + Partial ADX Exit + EMA Trend Filter
+// Added: Dual EMA Control System (Base + Momentum)
+// Added: 2-Timeframe MACD Filter (User Selectable)
+// Added: Improved Alternating Loss Protection with Test Trade
+// FIXED: 智能亏损保护 - 增加「连续同向恢复」逻辑，确保回测中生效
+//@version=6
+strategy(title="RF Pro Strategy (3Commas + Re-entry + Partial Exit + Dual EMA + 2-TF MACD + Improved AltLoss)", 
+         shorttitle="RF_Pro_Adv_Improved_AltLoss", 
+         overlay=true, 
+         pyramiding=10, 
+         initial_capital=10000, 
+         default_qty_type=strategy.cash,
+         default_qty_value=10000,
+         process_orders_on_close=false,
+         currency=currency.USD)
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+// Functions
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+rng_size(x, qty, n) => 
+    wper = n * 2 - 1
+    avrng = ta.ema(math.abs(x - x[1]), n)
+    AC = ta.ema(avrng, wper) * qty
+    AC
+rng_filt(x, rng_, n) =>
+    r = rng_
+    var rfilt = array.new_float(2, x)
+    array.set(rfilt, 1, array.get(rfilt, 0))
+    if x - r > array.get(rfilt, 1)
+        array.set(rfilt, 0, x - r)
+    if x + r < array.get(rfilt, 1)
+        array.set(rfilt, 0, x + r)
+    rng_filt1 = array.get(rfilt, 0)
+    rng_filt1
+calculateMACD(src, fastLength, slowLength, signalLength) =>
+    fastMA = ta.ema(src, fastLength)
+    slowMA = ta.ema(src, slowLength)
+    macdLine = fastMA - slowMA
+    signalLine = ta.ema(macdLine, signalLength)
+    histLine = macdLine - signalLine
+    [macdLine, signalLine, histLine]
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+// Inputs
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+group_3c = "🤖 3Commas Webhook 消息设置"
+msg_long_open  = input.text_area(defval="", title="多单-开仓/加仓 (Start Long)", group=group_3c)
+msg_long_close = input.text_area(defval="", title="多单-全部平仓 (Close Long)", group=group_3c)
+msg_short_open = input.text_area(defval="", title="空单-开仓/加仓 (Start Short)", group=group_3c)
+msg_short_close= input.text_area(defval="", title="空单-全部平仓 (Close Short)", group=group_3c)
+msg_tp_part    = input.text_area(defval="", title="分批止盈消息 (Partial TP)", group=group_3c)
+
+group_main = "1. 主趋势设置"
+rng_src = input(defval=close, title="数据源", group=group_main)
+rng_per = input.int(defval=40, minval=1, title="主趋势周期", group=group_main)
+rng_qty = input.float(defval=1.5, minval=0.1, title="乘积因子", group=group_main)
+
+group_re = "2. 金字塔加仓 & 扳机信号"
+useReentry = input.bool(defval=true, title="启用双周期信号", group=group_re)
+max_layers = input.int(defval=5, minval=1, maxval=10, title="最大加仓层数", group=group_re)
+pyramid_safe = input.bool(defval=true, title="仅在浮盈时加仓", group=group_re)
+fast_rng_per = input.int(defval=8, minval=1, title="信号周期 (Fast Period)", group=group_re)
+fast_rng_qty = input.float(defval=3.0, minval=0.1, title="信号倍数 (Fast Multiplier)", group=group_re)
+
+group_ema = "3. 📈 双EMA趋势过滤系统 (开仓控制)"
+useEmaFilter = input.bool(defval=true, title="启用双EMA过滤", group=group_ema)
+useBaseEma = input.bool(defval=true, title="启用基础EMA过滤", group=group_ema, inline="base_ema")
+baseEmaPeriod = input.int(defval=100, minval=5, title="基础EMA周期", group=group_ema, inline="base_ema")
+showBaseEmaLine = input.bool(defval=true, title="显示基础EMA线", group=group_ema, inline="base_ema")
+baseEmaColor = input.color(defval=color.new(#2962FF, 70), title="基础EMA颜色", group=group_ema, inline="base_ema")
+useMomentumEma = input.bool(defval=true, title="启用动量EMA过滤", group=group_ema, inline="mom_ema")
+momentumEmaPeriod = input.int(defval=20, minval=5, title="动量EMA周期", group=group_ema, inline="mom_ema")
+showMomentumEmaLine = input.bool(defval=true, title="显示动量EMA线", group=group_ema, inline="mom_ema")
+momentumEmaColor = input.color(defval=color.new(#FF6B6B, 70), title="动量EMA颜色", group=group_ema, inline="mom_ema")
+emaFilterMode = input.string("两者都需要", options=["两者都需要", "任一即可", "仅基础EMA", "仅动量EMA"], title="EMA过滤模式", group=group_ema)
+
+group_macd = "4. 📊 双时间周期MACD过滤系统"
+use2TfMacdFilter = input.bool(defval=false, title="启用双时间周期MACD过滤", group=group_macd)
+macdFastLength = input.int(12, "快线周期", minval=5, maxval=50, group=group_macd, inline="macd_params")
+macdSlowLength = input.int(26, "慢线周期", minval=10, maxval=100, group=group_macd, inline="macd_params")
+macdSignalLength = input.int(9, "信号周期", minval=5, maxval=30, group=group_macd, inline="macd_params")
+tf1_label = input.string("当前周期", "第一个周期", options=["当前周期", "5分钟", "15分钟", "30分钟", "1小时", "4小时", "日线"], group=group_macd)
+useTf1Macd = input.bool(true, "启用第一个周期", group=group_macd, inline="tf_switches")
+tf2_label = input.string("1小时", "第二个周期", options=["当前周期", "5分钟", "15分钟", "30分钟", "1小时", "4小时", "日线"], group=group_macd)
+useTf2Macd = input.bool(true, "启用第二个周期", group=group_macd, inline="tf_switches")
+twoTfMacdFilterMode = input.string("两者都需要", options=["两者都需要", "任一即可", "仅第一个周期", "仅第二个周期"], title="双周期MACD过滤模式", group=group_macd)
+useMacdZeroLine = input.bool(true, "启用零轴过滤", group=group_macd, inline="macd_zero")
+macdZeroFilter = input.string("MACD线在零轴上方", options=["MACD线在零轴上方", "MACD柱在零轴上方", "信号线在零轴上方"], title="零轴过滤条件", group=group_macd, inline="macd_zero")
+useMacdCross = input.bool(true, "启用金叉死叉过滤", group=group_macd, inline="macd_cross")
+macdCrossFilter = input.string("MACD线上穿信号线", options=["MACD线上穿信号线", "MACD柱转正", "双线上穿零轴"], title="金叉死叉条件", group=group_macd, inline="macd_cross")
+
+group_alt_loss = "5. 🔄 智能亏损保护系统（仓位调整版）"
+useAltLossProtection = input.bool(true, title="启用智能亏损保护", group=group_alt_loss)
+altLossTriggerMode = input.string("交替亏损", options=["交替亏损", "连续亏损"], title="触发方式", group=group_alt_loss, tooltip="交替亏损=多空交替且都亏；连续亏损=最近N笔都亏即降仓")
+altLossCheckLength = input.int(4, "检查最近交易次数", minval=3, maxval=8, group=group_alt_loss)
+altLossThreshold = input.int(2, "交替亏损阈值", minval=2, maxval=4, group=group_alt_loss)
+reducePositionPercent = input.float(50.0, "减仓比例%", minval=10.0, maxval=100.0, step=10.0, group=group_alt_loss)
+sameDirectionRecovery = input.int(2, "连续同向交易恢复", minval=1, maxval=3, group=group_alt_loss)
+requireProfitForRecovery = input.bool(false, "要求盈利才恢复", group=group_alt_loss)
+useCoolingPeriod = input.bool(true, "启用冷却期解除", group=group_alt_loss)
+coolingBars = input.int(10, "冷却K线数", minval=5, maxval=20, group=group_alt_loss)
+
+group_mm = "6. 资金管理 (基于TV初始资金)"
+useMoneyManagement = input.bool(defval=true, title="启用资金管理", group=group_mm)
+positionSizeType = input.string("固定金额", options=["固定金额", "百分比"], title="开仓方式", group=group_mm)
+fixedAmount = input.float(1000, "固定开仓金额", minval=1, group=group_mm)
+positionPercent = input.float(20, "开仓资金比例 (%)", minval=0.1, maxval=100, step=0.1, group=group_mm)
+
+group_filter = "7. 过滤"
+useRSIFilter = input.bool(defval=true, title="启用 RSI 过滤", group=group_filter)
+rsiLen = input.int(defval=14, title="RSI 周期", group=group_filter)
+rsiMaxLong = input.int(defval=67, title="开多 RSI 上限", group=group_filter)
+rsiMinShort = input.int(defval=18, title="开空 RSI 下限", group=group_filter)
+
+trailGroup = "8. 🔥 移动止盈 (ATR 基础防护)"
+useTrailing = input.bool(defval=true, title="启用 ATR 移动止盈", group=trailGroup)
+trailTriggerMult = input.float(defval=5.0, title="触发 ATR 倍数", step=0.1, group=trailGroup)
+trailOffsetMult = input.float(defval=1.5, title="回撤平仓 ATR 倍数", step=0.1, group=trailGroup)
+
+slGroup = "9. 基础止损 (硬止损)"
+useFixedSL = input.bool(false, "启用-百分比止损", group=slGroup, inline="sl_fix")
+stopLossPercent = input.float(1.0, "止损比例(%)", step=0.1, group=slGroup, inline="sl_fix")
+useAtrSL = input.bool(true, "启用-ATR动态止损", group=slGroup, inline="sl_atr")
+atrLength = input.int(14, "ATR周期", group=slGroup, inline="sl_atr")
+atrMultiplier = input.float(2.0, "ATR倍数", group=slGroup, inline="sl_atr")
+
+tpGroup = "10. 💸 分批止盈 (3-Stage Partial TP)"
+useTP1 = input.bool(true, "启用第 1 段止盈", group=tpGroup, inline="tp1")
+tp1Trigger = input.float(2.0, "收益率%", step=0.1, group=tpGroup, inline="tp1")
+tp1Qty = input.float(33.0, "平仓比例%", step=5.0, group=tpGroup, inline="tp1")
+useTP2 = input.bool(true, "启用第 2 段止盈", group=tpGroup, inline="tp2")
+tp2Trigger = input.float(4.0, "收益率%", step=0.1, group=tpGroup, inline="tp2")
+tp2Qty = input.float(50.0, "平仓比例%", step=5.0, group=tpGroup, inline="tp2")
+useTP3 = input.bool(true, "启用第 3 段止盈", group=tpGroup, inline="tp3")
+tp3Trigger = input.float(6.0, "收益率%", step=0.1, group=tpGroup, inline="tp3")
+tp3Qty = input.float(100.0, "平仓比例%", step=5.0, group=tpGroup, inline="tp3")
+
+adxGroup = "11. 📉 ADX 趋势衰竭止盈"
+useAdxExit = input.bool(true, "启用 ADX 拐头离场", group=adxGroup)
+adxLen = input.int(14, "ADX 周期", group=adxGroup)
+adxThreshold = input.int(25, "ADX 高位阈值", group=adxGroup)
+adxMinProfitPct = input.float(1.0, "ADX止盈触发所需最小盈利率 (%)", step=0.1, group=adxGroup)
+adxExitQty = input.float(50.0, "ADX 止盈平仓比例 (%)", minval=1, maxval=100, step=10, group=adxGroup)
+
+algoGroup = "12. ⚠️ AlgoAlpha 趋势反转概率平仓"
+useAlgoExit = input.bool(true, "启用 Algo 反转平仓", group=algoGroup)
+algoOscPeriod = input.int(20, "Oscillator Length", minval=1, group=algoGroup)
+algoThresholdOffset = input.float(0.0, "阈值线调整 (Offset)", step=1.0, group=algoGroup)
+
+group_prot = "13. 🛡️ 剧烈行情保护 (Anti-Whipsaw)"
+useVolFilter = input.bool(true, "启用剧烈反转保护", group=group_prot)
+volThreshold = input.float(2.0, "剧烈涨跌幅度阈值 (%)", step=0.1, group=group_prot)
+volWaitBars = input.int(3, "冷静期 K线数", group=group_prot)
+
+group_reentry = "14. ➕ 顺势回补 (Trend Following)"
+allowTrendFollowEntry = input.bool(true, "启用顺势回补", group=group_reentry)
+
+group_delay = "15. ⏰ 延迟执行设置 (修复未来函数)"
+entryDelayBars = input.int(defval=1, minval=0, maxval=5, title="信号延迟K线数", group=group_delay)
+
+use_barcolor = input.bool(true, "K线染色", group="UI")
+timeGroup = "时间过滤"
+skipWeekends = input.bool(true, "跳过周末", group=timeGroup)
+weekendStartDay = input.int(6, "周六", group=timeGroup)
+weekendStartHour = input.int(8, "8点", group=timeGroup)
+weekendEndDay = input.int(1, "周一", group=timeGroup)
+weekendEndHour = input.int(0, "0点", group=timeGroup)
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+// Logic Calculation
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+isWeekendBeijingTime() =>
+    d = dayofweek(time), h = hour(time)
+    (d == 6 and h >= weekendStartHour) or (d == 7) or (d == 1 and h < weekendEndHour)
+isValidTradingTime() => not skipWeekends or not isWeekendBeijingTime()
+
+main_rng_size = rng_size(rng_src, rng_qty, rng_per)
+main_filt = rng_filt(rng_src, main_rng_size, rng_per)
+h_band = main_filt + main_rng_size
+l_band = main_filt - main_rng_size
+var float main_dir = 0.0
+main_dir := main_filt > main_filt[1] ? 1 : main_filt < main_filt[1] ? -1 : main_dir
+main_upward = main_dir == 1
+main_downward = main_dir == -1
+fast_rng_size = rng_size(rng_src, fast_rng_qty, fast_rng_per)
+fast_filt = rng_filt(rng_src, fast_rng_size, fast_rng_per)
+var float fast_dir = 0.0
+fast_dir := fast_filt > fast_filt[1] ? 1 : fast_filt < fast_filt[1] ? -1 : fast_dir
+fast_upward = fast_dir == 1
+fast_downward = fast_dir == -1
+
+baseEmaValue = ta.ema(close, baseEmaPeriod)
+momentumEmaValue = ta.ema(close, momentumEmaPeriod)
+prevClose = close[1]
+prevBaseEmaValue = baseEmaValue[1]
+prevMomentumEmaValue = momentumEmaValue[1]
+baseEmaFilterLong = not useBaseEma or prevClose > prevBaseEmaValue
+baseEmaFilterShort = not useBaseEma or prevClose < prevBaseEmaValue
+momentumEmaFilterLong = not useMomentumEma or prevClose > prevMomentumEmaValue
+momentumEmaFilterShort = not useMomentumEma or prevClose < prevMomentumEmaValue
+
+getEmaFilterCombined(baseLong, momentumLong, baseShort, momentumShort) =>
+    var bool emaFilterLongResult = false
+    var bool emaFilterShortResult = false
+    if not useEmaFilter
+        emaFilterLongResult := true
+        emaFilterShortResult := true
+    else
+        if emaFilterMode == "两者都需要"
+            emaFilterLongResult := baseLong and momentumLong
+            emaFilterShortResult := baseShort and momentumShort
+        else if emaFilterMode == "任一即可"
+            emaFilterLongResult := baseLong or momentumLong
+            emaFilterShortResult := baseShort or momentumShort
+        else if emaFilterMode == "仅基础EMA"
+            emaFilterLongResult := baseLong
+            emaFilterShortResult := baseShort
+        else if emaFilterMode == "仅动量EMA"
+            emaFilterLongResult := momentumLong
+            emaFilterShortResult := momentumShort
+    [emaFilterLongResult, emaFilterShortResult]
+
+[emaFilterLong, emaFilterShort] = getEmaFilterCombined(baseEmaFilterLong, momentumEmaFilterLong, baseEmaFilterShort, momentumEmaFilterShort)
+emaGoldenCross = prevMomentumEmaValue > prevBaseEmaValue and prevMomentumEmaValue[1] <= prevBaseEmaValue[1]
+emaDeadCross = prevMomentumEmaValue < prevBaseEmaValue and prevMomentumEmaValue[1] >= prevBaseEmaValue[1]
+
+getMacdFilterCondition(macdLine, signalLine, histLine) =>
+    var bool zeroLongResult = false
+    var bool zeroShortResult = false
+    if not useMacdZeroLine
+        zeroLongResult := true
+        zeroShortResult := true
+    else
+        if macdZeroFilter == "MACD线在零轴上方"
+            zeroLongResult := macdLine > 0
+            zeroShortResult := macdLine < 0
+        else if macdZeroFilter == "MACD柱在零轴上方"
+            zeroLongResult := histLine > 0
+            zeroShortResult := histLine < 0
+        else if macdZeroFilter == "信号线在零轴上方"
+            zeroLongResult := signalLine > 0
+            zeroShortResult := signalLine < 0
+    var bool crossLongResult = false
+    var bool crossShortResult = false
+    if not useMacdCross
+        crossLongResult := true
+        crossShortResult := true
+    else
+        if macdCrossFilter == "MACD线上穿信号线"
+            crossLongResult := macdLine > signalLine and macdLine[1] <= signalLine[1]
+            crossShortResult := macdLine < signalLine and macdLine[1] >= signalLine[1]
+        else if macdCrossFilter == "MACD柱转正"
+            crossLongResult := histLine > 0 and histLine[1] <= 0
+            crossShortResult := histLine < 0 and histLine[1] >= 0
+        else if macdCrossFilter == "双线上穿零轴"
+            crossLongResult := macdLine > 0 and macdLine[1] <= 0 and signalLine > 0 and signalLine[1] <= 0
+            crossShortResult := macdLine < 0 and macdLine[1] >= 0 and signalLine < 0 and signalLine[1] >= 0
+        if not crossLongResult and not crossShortResult
+            crossLongResult := true
+            crossShortResult := true
+    var bool macdFilterLongResult = zeroLongResult and crossLongResult
+    var bool macdFilterShortResult = zeroShortResult and crossShortResult
+    [macdFilterLongResult, macdFilterShortResult]
+
+[currMacdLine, currSignalLine, currHistLine] = calculateMACD(close, macdFastLength, macdSlowLength, macdSignalLength)
+[currMacdFilterLong, currMacdFilterShort] = getMacdFilterCondition(currMacdLine[1], currSignalLine[1], currHistLine[1])
+
+getTfResolution(tfLabel) =>
+    if tfLabel == "当前周期"
+        ""
+    else if tfLabel == "5分钟"
+        "5"
+    else if tfLabel == "15分钟"
+        "15"
+    else if tfLabel == "30分钟"
+        "30"
+    else if tfLabel == "1小时"
+        "60"
+    else if tfLabel == "4小时"
+        "240"
+    else if tfLabel == "日线"
+        "D"
+    else
+        ""
+
+tf1Resolution = getTfResolution(tf1_label)
+var bool tf1FilterLongResult = true
+var bool tf1FilterShortResult = true
+if tf1Resolution != ""
+    close_tf1 = request.security(syminfo.tickerid, tf1Resolution, close, lookahead=barmerge.lookahead_off)
+    [macdLine_tf1, signalLine_tf1, histLine_tf1] = calculateMACD(close_tf1, macdFastLength, macdSlowLength, macdSignalLength)
+    [tempTf1FilterLong, tempTf1FilterShort] = getMacdFilterCondition(macdLine_tf1[1], signalLine_tf1[1], histLine_tf1[1])
+    tf1FilterLongResult := tempTf1FilterLong
+    tf1FilterShortResult := tempTf1FilterShort
+else
+    tf1FilterLongResult := currMacdFilterLong
+    tf1FilterShortResult := currMacdFilterShort
+
+tf2Resolution = getTfResolution(tf2_label)
+var bool tf2FilterLongResult = true
+var bool tf2FilterShortResult = true
+if tf2Resolution != ""
+    close_tf2 = request.security(syminfo.tickerid, tf2Resolution, close, lookahead=barmerge.lookahead_off)
+    [macdLine_tf2, signalLine_tf2, histLine_tf2] = calculateMACD(close_tf2, macdFastLength, macdSlowLength, macdSignalLength)
+    [tempTf2FilterLong, tempTf2FilterShort] = getMacdFilterCondition(macdLine_tf2[1], signalLine_tf2[1], histLine_tf2[1])
+    tf2FilterLongResult := tempTf2FilterLong
+    tf2FilterShortResult := tempTf2FilterShort
+else
+    tf2FilterLongResult := currMacdFilterLong
+    tf2FilterShortResult := currMacdFilterShort
+
+get2TfMacdFilterCombined() =>
+    var bool twoTfMacdFilterLongResult = false
+    var bool twoTfMacdFilterShortResult = false
+    if not use2TfMacdFilter
+        twoTfMacdFilterLongResult := true
+        twoTfMacdFilterShortResult := true
+    else
+        tf1ValidLong = not useTf1Macd or tf1FilterLongResult
+        tf1ValidShort = not useTf1Macd or tf1FilterShortResult
+        tf2ValidLong = not useTf2Macd or tf2FilterLongResult
+        tf2ValidShort = not useTf2Macd or tf2FilterShortResult
+        if twoTfMacdFilterMode == "两者都需要"
+            twoTfMacdFilterLongResult := tf1ValidLong and tf2ValidLong
+            twoTfMacdFilterShortResult := tf1ValidShort and tf2ValidShort
+        else if twoTfMacdFilterMode == "任一即可"
+            anyValidLong = tf1ValidLong or tf2ValidLong
+            anyValidShort = tf1ValidShort or tf2ValidShort
+            if not (useTf1Macd or useTf2Macd)
+                anyValidLong := true
+                anyValidShort := true
+            twoTfMacdFilterLongResult := anyValidLong
+            twoTfMacdFilterShortResult := anyValidShort
+        else if twoTfMacdFilterMode == "仅第一个周期"
+            twoTfMacdFilterLongResult := tf1ValidLong
+            twoTfMacdFilterShortResult := tf1ValidShort
+        else if twoTfMacdFilterMode == "仅第二个周期"
+            twoTfMacdFilterLongResult := tf2ValidLong
+            twoTfMacdFilterShortResult := tf2ValidShort
+    [twoTfMacdFilterLongResult, twoTfMacdFilterShortResult]
+
+[twoTfMacdFilterLong, twoTfMacdFilterShort] = get2TfMacdFilterCombined()
+currMacdGoldenCross = currMacdLine > currSignalLine and currMacdLine[1] <= currSignalLine[1]
+currMacdDeadCross = currMacdLine < currSignalLine and currMacdLine[1] >= currSignalLine[1]
+
+// === 🔄 智能亏损保护系统（仓位调整版）FIXED V3 + 连续同向恢复 ===
+var bool protectionActive = false
+var int protectionStartBar = 0
+var int lastClosedTradeCount = 0
+var int consecutiveSameDirection = 0
+var string lastTradeDirection = ""
+var float[] tradeDirs = array.new_float(0)
+var float[] tradeResults = array.new_float(0)
+var string[] tradeIds = array.new_string(0)
+
+safeArrayGetFloat(arr, index) =>
+    if array.size(arr) > index and index >= 0
+        array.get(arr, index)
+    else
+        na
+safeArrayGetString(arr, index) =>
+    if array.size(arr) > index and index >= 0
+        array.get(arr, index)
+    else
+        ""
+
+isAlternatingLoss() =>
+    if array.size(tradeDirs) < altLossThreshold
+        false
+    else
+        checkCount = math.min(array.size(tradeDirs), altLossThreshold)
+        var bool alternatingResult = true
+        var bool allLossResult = true
+        for i = 0 to checkCount - 2
+            dir1 = safeArrayGetFloat(tradeDirs, i)
+            dir2 = safeArrayGetFloat(tradeDirs, i + 1)
+            if na(dir1) or na(dir2) or dir1 == dir2
+                alternatingResult := false
+                break
+        for i = 0 to checkCount - 1
+            result = safeArrayGetFloat(tradeResults, i)
+            if not na(result) and result > 0
+                allLossResult := false
+                break
+        alternatingResult and allLossResult
+
+// 连续亏损：最近 N 笔全部亏损即触发（不要求多空交替）
+isConsecutiveLoss() =>
+    if array.size(tradeResults) < altLossThreshold
+        false
+    else
+        checkCount = math.min(array.size(tradeResults), altLossThreshold)
+        var bool allLoss = true
+        for i = 0 to checkCount - 1
+            result = safeArrayGetFloat(tradeResults, i)
+            if not na(result) and result > 0
+                allLoss := false
+                break
+        allLoss
+
+// 同一条K线内多次平仓（如 Long_Base + Long_Add）只记 1 笔，用「最后平掉的那笔」的方向和盈亏，否则永远凑不出「多空交替」
+if useAltLossProtection
+    currentClosedTradeCount = strategy.closedtrades
+    if currentClosedTradeCount > lastClosedTradeCount
+        // 只取本批中「最后平掉的一笔」作为本 bar 的 1 条记录（避免同 bar 多笔同向导致从不交替）
+        i = currentClosedTradeCount - 1
+        if i >= 0
+            tradeId = str.tostring(strategy.closedtrades.entry_id(i))
+            var bool alreadyRecorded = false
+            for j = 0 to array.size(tradeIds) - 1
+                if j >= array.size(tradeIds)
+                    break
+                if safeArrayGetString(tradeIds, j) == tradeId
+                    alreadyRecorded := true
+                    break
+            if not alreadyRecorded
+                array.push(tradeIds, tradeId)
+                tradeSize = strategy.closedtrades.size(i)
+                tradeDir = tradeSize > 0 ? 1.0 : -1.0
+                entryPrice = strategy.closedtrades.entry_price(i)
+                exitPrice = strategy.closedtrades.exit_price(i)
+                float profitPctValue = 0.0
+                if tradeDir == 1
+                    profitPctValue := (exitPrice - entryPrice) / entryPrice * 100
+                else
+                    profitPctValue := (entryPrice - exitPrice) / entryPrice * 100
+                array.unshift(tradeDirs, tradeDir)
+                array.unshift(tradeResults, profitPctValue)
+                currentTradeDirection = tradeDir == 1 ? "LONG" : "SHORT"
+                if lastTradeDirection == currentTradeDirection
+                    consecutiveSameDirection := consecutiveSameDirection + 1
+                else
+                    consecutiveSameDirection := 1
+                lastTradeDirection := currentTradeDirection
+                maxRecords = altLossCheckLength
+                while array.size(tradeDirs) > maxRecords
+                    array.pop(tradeDirs)
+                while array.size(tradeResults) > maxRecords
+                    array.pop(tradeResults)
+                while array.size(tradeIds) > maxRecords
+                    array.pop(tradeIds)
+                shouldActivate = (altLossTriggerMode == "交替亏损" and array.size(tradeDirs) >= altLossThreshold and isAlternatingLoss()) or (altLossTriggerMode == "连续亏损" and isConsecutiveLoss())
+                if shouldActivate and not protectionActive
+                    protectionActive := true
+                    protectionStartBar := bar_index
+                    if barstate.islast
+                        label.new(bar_index, high, "🔴 智能保护激活\n降仓至 " + str.tostring(reducePositionPercent) + "%", color=color.red, style=label.style_label_down, size=size.normal)
+        lastClosedTradeCount := currentClosedTradeCount
+
+    // 2.5 连续同向恢复：满足「连续同向笔数」且（可选）最近一笔盈利则解除保护
+    if useAltLossProtection and protectionActive
+        needProfit = requireProfitForRecovery and array.size(tradeResults) > 0
+        lastResult = safeArrayGetFloat(tradeResults, 0)
+        profitOk = not needProfit or (not na(lastResult) and lastResult > 0)
+        if consecutiveSameDirection >= sameDirectionRecovery and profitOk
+            protectionActive := false
+
+    // 3. 冷却期自动解除（备用）
+    if useCoolingPeriod and protectionActive
+        barsSinceProtection = bar_index - protectionStartBar
+        if barsSinceProtection >= coolingBars
+            protectionActive := false
+
+prevRsiValue = ta.rsi(close[1], rsiLen)
+rsiLongOk = not useRSIFilter or (prevRsiValue < rsiMaxLong)
+rsiShortOk = not useRSIFilter or (prevRsiValue > rsiMinShort)
+prevAtrValue = ta.atr(atrLength)
+[diplus, diminus, adxValue] = ta.dmi(adxLen, adxLen)
+bool adxPeaked = adxValue[1] < adxValue[2] and adxValue[2] >= adxValue[3] 
+bool isTrendExhausted = useAdxExit and (adxValue[1] > adxThreshold) and adxPeaked
+prevMidpointPrice = hl2[1]
+prevShortSMA = ta.sma(prevMidpointPrice, 5)
+prevLongSMA = ta.sma(prevMidpointPrice, 34)
+prevAmazingOsc = prevShortSMA - prevLongSMA
+prevRise = ta.rma(math.max(ta.change(prevAmazingOsc), 0), algoOscPeriod)
+prevFall = ta.rma(-math.min(ta.change(prevAmazingOsc), 0), algoOscPeriod)
+prevAlgoCustomRSI = (prevFall == 0 ? 100 : prevRise == 0 ? 0 : 100 - (100 / (1 + prevRise / prevFall))) - 50
+var algoDurations = array.new_int()
+prevAlgoCut = ta.barssince(ta.cross(prevAlgoCustomRSI, 0))
+if prevAlgoCut == 0 and prevAlgoCut != prevAlgoCut[1]
+    array.unshift(algoDurations, prevAlgoCut[1])
+float algoRawBasis = array.size(algoDurations) > 0 ? array.avg(algoDurations) : na
+float algoBasis = na(algoRawBasis) ? na : algoRawBasis + algoThresholdOffset 
+algoBasis := math.max(1.0, algoBasis)
+bool isAlgoReversalSignal = not na(algoBasis) and (prevAlgoCut >= algoBasis)
+bool algoExitSignalLong = useAlgoExit and (prevAlgoCustomRSI > 0) and isAlgoReversalSignal
+bool algoExitSignalShort = useAlgoExit and (prevAlgoCustomRSI < 0) and isAlgoReversalSignal
+
+calculatePositionSize(entryPrice) =>
+    var float qtyResult = 0.0
+    if useMoneyManagement
+        float actualAmount = fixedAmount
+        float actualPercent = positionPercent
+        if useAltLossProtection and protectionActive
+            actualAmount := fixedAmount * (reducePositionPercent / 100.0)
+            actualPercent := positionPercent * (reducePositionPercent / 100.0)
+        if positionSizeType == "固定金额"
+            qtyResult := actualAmount / entryPrice
+        else
+            float currentEquity = strategy.equity
+            float tradeAmount = actualPercent / 100.0 * currentEquity
+            qtyResult := tradeAmount / entryPrice
+    else
+        qtyResult := 1000 / entryPrice
+    qtyResult := math.max(qtyResult, 0.000001)
+    qtyResult
+
+getActualAmountInfo() =>
+    string info = ""
+    if useMoneyManagement
+        if positionSizeType == "固定金额"
+            float actualAmt = fixedAmount
+            if useAltLossProtection and protectionActive
+                actualAmt := fixedAmount * (reducePositionPercent / 100.0)
+            info := "金额:$" + str.tostring(actualAmt, "#,##0.00")
+        else
+            float actualPct = positionPercent
+            if useAltLossProtection and protectionActive
+                actualPct := positionPercent * (reducePositionPercent / 100.0)
+            info := "比例:" + str.tostring(actualPct, "#.#") + "%"
+    else
+        info := "无资金管理"
+    info
+
+calcInitialSL(price, isLong) =>
+    var float slPriceResult = na
+    var float slFixedResult = na
+    if useFixedSL
+        distFixed = price * (stopLossPercent / 100)
+        slFixedResult := isLong ? price - distFixed : price + distFixed
+    var float slAtrResult = na
+    if useAtrSL
+        distAtr = prevAtrValue * atrMultiplier
+        slAtrResult := isLong ? price - distAtr : price + distAtr
+    if not na(slFixedResult) and not na(slAtrResult)
+        slPriceResult := isLong ? math.max(slFixedResult, slAtrResult) : math.min(slFixedResult, slAtrResult)
+    else if not na(slFixedResult)
+        slPriceResult := slFixedResult
+    else if not na(slAtrResult)
+        slPriceResult := slAtrResult
+    slPriceResult
+
+var float longEntryPrice = na
+var float shortEntryPrice = na
+var float longInitialStop = na
+var float shortInitialStop = na
+var bool trailingActiveLong = false
+var bool trailingActiveShort = false
+var float highSinceEntryLong = na 
+var float lowSinceEntryShort = na 
+var float trailingStopPriceLong = na
+var float trailingStopPriceShort = na
+var bool isTp1Executed = false 
+var bool isTp2Executed = false 
+var bool isTp3Executed = false 
+bool isLongProfit = strategy.position_size > 0 ? (close[1] > strategy.position_avg_price) : false
+bool isShortProfit = strategy.position_size < 0 ? (close[1] < strategy.position_avg_price) : false
+barChangePct = math.abs(close[1] - close[2]) / close[2] * 100
+prevMainUpward = main_upward[1]
+prevMainDownward = main_downward[1]
+prevFastUpward = fast_upward[1]
+prevFastDownward = fast_downward[1]
+rawTrendReversalLong = prevMainUpward and (not prevMainUpward[1] or prevMainDownward[1]) and rsiLongOk
+rawTrendReversalShort = prevMainDownward and (not prevMainDownward[1] or prevMainUpward[1]) and rsiShortOk
+var int lastViolentBarIdx = -999
+if (rawTrendReversalLong[1] or rawTrendReversalShort[1]) and barChangePct[1] > volThreshold
+    lastViolentBarIdx := bar_index[1]
+inCooldown = (bar_index - lastViolentBarIdx) <= volWaitBars
+triggerLong = prevMainUpward and prevFastUpward and (not prevFastUpward[1] or prevFastDownward[1]) and rsiLongOk
+triggerShort = prevMainDownward and prevFastDownward and (not prevFastDownward[1] or prevFastUpward[1]) and rsiShortOk
+trendFollowBuy = allowTrendFollowEntry and (strategy.position_size == 0) and prevMainUpward and triggerLong
+trendFollowSell = allowTrendFollowEntry and (strategy.position_size == 0) and prevMainDownward and triggerShort
+allowPyramidLong = (strategy.position_size == 0) or (strategy.opentrades < max_layers and (pyramid_safe ? isLongProfit : true))
+allowPyramidShort = (strategy.position_size == 0) or (strategy.opentrades < max_layers and (pyramid_safe ? isShortProfit : true))
+finalFilterLong = emaFilterLong and twoTfMacdFilterLong
+finalFilterShort = emaFilterShort and twoTfMacdFilterShort
+delayedEntryLong = (rawTrendReversalLong or trendFollowBuy) and (not useVolFilter or not inCooldown) and finalFilterLong
+delayedEntryShort = (rawTrendReversalShort or trendFollowSell) and (not useVolFilter or not inCooldown) and finalFilterShort
+delayedAddLong = useReentry and triggerLong and not rawTrendReversalLong and allowPyramidLong and finalFilterLong
+delayedAddShort = useReentry and triggerShort and not rawTrendReversalShort and allowPyramidShort and finalFilterShort
+strategy.risk.max_position_size(max_layers)
+
+get_alert_msg(msg) => str.length(msg) > 0 ? msg : na
+
+if isValidTradingTime()
+    if delayedEntryLong
+        if strategy.position_size < 0
+            strategy.close_all(comment="平空反手", alert_message=get_alert_msg(msg_short_close))
+        float longQty = calculatePositionSize(open)
+        string actualAmountInfo = getActualAmountInfo()
+        string comment_txt = rawTrendReversalLong ? "开多(主)" : "开多(补)"
+        if not emaFilterLong and useEmaFilter
+            comment_txt := comment_txt + " [EMA过滤]"
+        if not twoTfMacdFilterLong and use2TfMacdFilter
+            comment_txt := comment_txt + " [双周期MACD过滤]"
+        if useAltLossProtection and protectionActive
+            comment_txt := comment_txt + " [减仓模式-" + str.tostring(reducePositionPercent) + "%]"
+        comment_txt := comment_txt + " | " + actualAmountInfo
+        if barstate.islast
+            comment_txt := comment_txt + " | 数量:" + str.tostring(longQty, "#.####")
+        strategy.entry("Long_Base", strategy.long, qty=longQty, comment=comment_txt, alert_message=get_alert_msg(msg_long_open))
+        longEntryPrice := open
+        longInitialStop := calcInitialSL(open, true)
+        trailingActiveLong := false
+        highSinceEntryLong := open
+        trailingStopPriceLong := na
+        isTp1Executed := false 
+        isTp2Executed := false 
+        isTp3Executed := false 
+        shortEntryPrice := na
+        shortInitialStop := na
+        trailingActiveShort := false
+    else if delayedAddLong
+        float addLongQty = calculatePositionSize(open)
+        string actualAmountInfo = getActualAmountInfo()
+        string add_comment = "加多"
+        if not emaFilterLong and useEmaFilter
+            add_comment := add_comment + " [EMA过滤]"
+        if not twoTfMacdFilterLong and use2TfMacdFilter
+            add_comment := add_comment + " [双周期MACD过滤]"
+        if useAltLossProtection and protectionActive
+            add_comment := add_comment + " [减仓模式-" + str.tostring(reducePositionPercent) + "%]"
+        add_comment := add_comment + " | " + actualAmountInfo
+        if barstate.islast
+            add_comment := add_comment + " | 数量:" + str.tostring(addLongQty, "#.####")
+        strategy.entry("Long_Add", strategy.long, qty=addLongQty, comment=add_comment, alert_message=get_alert_msg(msg_long_open))
+        longEntryPrice := open 
+    if delayedEntryShort
+        if strategy.position_size > 0
+            strategy.close_all(comment="平多反手", alert_message=get_alert_msg(msg_long_close))
+        float shortQty = calculatePositionSize(open)
+        string actualAmountInfo = getActualAmountInfo()
+        string comment_txt = rawTrendReversalShort ? "开空(主)" : "开空(补)"
+        if not emaFilterShort and useEmaFilter
+            comment_txt := comment_txt + " [EMA过滤]"
+        if not twoTfMacdFilterShort and use2TfMacdFilter
+            comment_txt := comment_txt + " [双周期MACD过滤]"
+        if useAltLossProtection and protectionActive
+            comment_txt := comment_txt + " [减仓模式-" + str.tostring(reducePositionPercent) + "%]"
+        comment_txt := comment_txt + " | " + actualAmountInfo
+        if barstate.islast
+            comment_txt := comment_txt + " | 数量:" + str.tostring(shortQty, "#.####")
+        strategy.entry("Short_Base", strategy.short, qty=shortQty, comment=comment_txt, alert_message=get_alert_msg(msg_short_open))
+        shortEntryPrice := open
+        shortInitialStop := calcInitialSL(open, false)
+        trailingActiveShort := false
+        lowSinceEntryShort := open
+        trailingStopPriceShort := na
+        isTp1Executed := false 
+        isTp2Executed := false 
+        isTp3Executed := false 
+        longEntryPrice := na
+        longInitialStop := na
+        trailingActiveLong := false
+    else if delayedAddShort
+        float addShortQty = calculatePositionSize(open)
+        string actualAmountInfo = getActualAmountInfo()
+        string add_comment = "加空"
+        if not emaFilterShort and useEmaFilter
+            add_comment := add_comment + " [EMA过滤]"
+        if not twoTfMacdFilterShort and use2TfMacdFilter
+            add_comment := add_comment + " [双周期MACD过滤]"
+        if useAltLossProtection and protectionActive
+            add_comment := add_comment + " [减仓模式-" + str.tostring(reducePositionPercent) + "%]"
+        add_comment := add_comment + " | " + actualAmountInfo
+        if barstate.islast
+            add_comment := add_comment + " | 数量:" + str.tostring(addShortQty, "#.####")
+        strategy.entry("Short_Add", strategy.short, qty=addShortQty, comment=add_comment, alert_message=get_alert_msg(msg_short_open))
+        shortEntryPrice := open
+
+float currentOpenProfitPctValue = 0.0
+if strategy.position_size != 0
+    if strategy.position_size > 0
+        currentOpenProfitPctValue := (close[1] - strategy.position_avg_price) / strategy.position_avg_price * 100
+    else
+        currentOpenProfitPctValue := (strategy.position_avg_price - close[1]) / strategy.position_avg_price * 100
+
+if strategy.position_size != 0
+    if useTP1 and not isTp1Executed and currentOpenProfitPctValue >= tp1Trigger
+        strategy.close("Long_Base", qty_percent=tp1Qty / 100.0, comment="💰TP1", alert_message=get_alert_msg(msg_tp_part))
+        strategy.close("Long_Add", qty_percent=tp1Qty / 100.0, comment="💰TP1", alert_message=get_alert_msg(msg_tp_part))
+        strategy.close("Short_Base", qty_percent=tp1Qty / 100.0, comment="💰TP1", alert_message=get_alert_msg(msg_tp_part))
+        strategy.close("Short_Add", qty_percent=tp1Qty / 100.0, comment="💰TP1", alert_message=get_alert_msg(msg_tp_part))
+        isTp1Executed := true
+    if useTP2 and not isTp2Executed and currentOpenProfitPctValue >= tp2Trigger
+        strategy.close("Long_Base", qty_percent=tp2Qty / 100.0, comment="💰TP2", alert_message=get_alert_msg(msg_tp_part))
+        strategy.close("Long_Add", qty_percent=tp2Qty / 100.0, comment="💰TP2", alert_message=get_alert_msg(msg_tp_part))
+        strategy.close("Short_Base", qty_percent=tp2Qty / 100.0, comment="💰TP2", alert_message=get_alert_msg(msg_tp_part))
+        strategy.close("Short_Add", qty_percent=tp2Qty / 100.0, comment="💰TP2", alert_message=get_alert_msg(msg_tp_part))
+        isTp2Executed := true
+    if useTP3 and not isTp3Executed and currentOpenProfitPctValue >= tp3Trigger
+        strategy.close("Long_Base", qty_percent=tp3Qty / 100.0, comment="💰TP3", alert_message=get_alert_msg(msg_tp_part))
+        strategy.close("Long_Add", qty_percent=tp3Qty / 100.0, comment="💰TP3", alert_message=get_alert_msg(msg_tp_part))
+        strategy.close("Short_Base", qty_percent=tp3Qty / 100.0, comment="💰TP3", alert_message=get_alert_msg(msg_tp_part))
+        strategy.close("Short_Add", qty_percent=tp3Qty / 100.0, comment="💰TP3", alert_message=get_alert_msg(msg_tp_part))
+        isTp3Executed := true
+
+if strategy.position_size > 0 
+    if high[1] > nz(highSinceEntryLong, high[1])
+        highSinceEntryLong := high[1]
+    if useTrailing and highSinceEntryLong >= longEntryPrice + (prevAtrValue * trailTriggerMult)
+        trailingActiveLong := true
+    float atrStopPrice = highSinceEntryLong - (prevAtrValue * trailOffsetMult)
+    float candidateStop = trailingActiveLong ? atrStopPrice : longInitialStop
+    if not na(candidateStop)
+        if na(trailingStopPriceLong) or candidateStop > trailingStopPriceLong
+            trailingStopPriceLong := candidateStop
+if strategy.position_size < 0
+    if low[1] < nz(lowSinceEntryShort, low[1])
+        lowSinceEntryShort := low[1]
+    if useTrailing and lowSinceEntryShort <= shortEntryPrice - (prevAtrValue * trailTriggerMult)
+        trailingActiveShort := true
+    float atrStopPriceS = lowSinceEntryShort + (prevAtrValue * trailOffsetMult)
+    float candidateStopS = trailingActiveShort ? atrStopPriceS : shortInitialStop
+    if not na(candidateStopS)
+        if na(trailingStopPriceShort) or candidateStopS < trailingStopPriceShort
+            trailingStopPriceShort := candidateStopS
+
+bool adxConditionLong = strategy.position_size > 0 and isTrendExhausted
+bool adxConditionShort = strategy.position_size < 0 and isTrendExhausted
+bool adxLongExit = adxConditionLong and (currentOpenProfitPctValue >= adxMinProfitPct)
+bool adxShortExit = adxConditionShort and (currentOpenProfitPctValue >= adxMinProfitPct)
+
+if strategy.position_size > 0
+    if algoExitSignalLong
+        strategy.close_all(comment="⚠️Algo反转", alert_message=get_alert_msg(msg_long_close))
+        longEntryPrice := na
+    else if adxLongExit
+        strategy.close("Long_Base", qty_percent=adxExitQty / 100.0, comment="📉ADX止盈", alert_message=get_alert_msg(msg_tp_part))
+        strategy.close("Long_Add", qty_percent=adxExitQty / 100.0, comment="📉ADX止盈", alert_message=get_alert_msg(msg_tp_part))
+        if adxExitQty >= 100
+            longEntryPrice := na
+    else if not na(trailingStopPriceLong) and low[1] <= trailingStopPriceLong
+        strategy.close_all(comment="ATR移损", alert_message=get_alert_msg(msg_long_close))
+        longEntryPrice := na
+    else if not na(longInitialStop) and low[1] <= longInitialStop and not trailingActiveLong
+        strategy.close_all(comment="硬止损", alert_message=get_alert_msg(msg_long_close))
+if strategy.position_size < 0
+    if algoExitSignalShort
+        strategy.close_all(comment="⚠️Algo反转", alert_message=get_alert_msg(msg_short_close))
+        shortEntryPrice := na
+    else if adxShortExit
+        strategy.close("Short_Base", qty_percent=adxExitQty / 100.0, comment="📉ADX止盈", alert_message=get_alert_msg(msg_tp_part))
+        strategy.close("Short_Add", qty_percent=adxExitQty / 100.0, comment="📉ADX止盈", alert_message=get_alert_msg(msg_tp_part))
+        if adxExitQty >= 100
+            shortEntryPrice := na
+    else if not na(trailingStopPriceShort) and high[1] >= trailingStopPriceShort
+        strategy.close_all(comment="ATR移损", alert_message=get_alert_msg(msg_short_close))
+        shortEntryPrice := na
+    else if not na(shortInitialStop) and high[1] >= shortInitialStop and not trailingActiveShort
+        strategy.close_all(comment="硬止损", alert_message=get_alert_msg(msg_short_close))
+
+if not isValidTradingTime() and strategy.position_size != 0
+    string close_msg = strategy.position_size > 0 ? msg_long_close : msg_short_close
+    strategy.close_all(comment="休市平仓", alert_message=get_alert_msg(close_msg))
+
+baseEmaPlotValue = showBaseEmaLine ? baseEmaValue : na
+plot(baseEmaPlotValue, color=baseEmaColor, linewidth=2, title="基础EMA")
+momentumEmaPlotValue = showMomentumEmaLine ? momentumEmaValue : na
+plot(momentumEmaPlotValue, color=momentumEmaColor, linewidth=1, title="动量EMA")
+filt_color = main_upward ? #05ff9b : main_downward ? #ff0583 : #cccccc
+p_main = plot(main_filt, color=color.new(filt_color, 20), linewidth=3, title="Main Filter")
+h_band_plot = plot(h_band, color=color.new(#05ff9b, 100), title="H Band")
+l_band_plot = plot(l_band, color=color.new(#ff0583, 100), title="L Band")
+fill(h_band_plot, p_main, color=color.new(#00b36b, 92), title="H Fill")
+fill(l_band_plot, p_main, color=color.new(#b8005d, 92), title="L Fill")
+fast_color = fast_upward ? color.yellow : color.fuchsia
+fastPlotValue = useReentry ? fast_filt : na
+plot(fastPlotValue, color=color.new(fast_color, 50), linewidth=1, title="Fast Signal", style=plot.style_line)
+avgPricePlotValue = strategy.position_size != 0 ? strategy.position_avg_price : na
+plot(avgPricePlotValue, color=color.white, style=plot.style_linebr, linewidth=1, title="Avg Price")
+trailLongPlotValue = strategy.position_size > 0 ? trailingStopPriceLong : na
+plot(trailLongPlotValue, color=color.new(color.blue, 20), style=plot.style_linebr, title="Trailing Stop", linewidth=2)
+trailShortPlotValue = strategy.position_size < 0 ? trailingStopPriceShort : na
+plot(trailShortPlotValue, color=color.new(color.blue, 20), style=plot.style_linebr, title="Trailing Stop", linewidth=2)
+plotshape(emaGoldenCross, style=shape.triangleup, location=location.bottom, color=color.green, size=size.small, title="EMA金叉")
+plotshape(emaDeadCross, style=shape.triangledown, location=location.top, color=color.red, size=size.small, title="EMA死叉")
+plotshape(currMacdGoldenCross and use2TfMacdFilter, style=shape.circle, location=location.bottom, color=color.green, size=size.tiny, title="MACD金叉")
+plotshape(currMacdDeadCross and use2TfMacdFilter, style=shape.circle, location=location.top, color=color.red, size=size.tiny, title="MACD死叉")
+plotshape(delayedEntryLong and isValidTradingTime(), style=shape.triangleup, location=location.belowbar, color=finalFilterLong ? color.green : color.gray, size=size.small, title="Long Entry")
+plotshape(delayedEntryShort and isValidTradingTime(), style=shape.triangledown, location=location.abovebar, color=finalFilterShort ? color.red : color.gray, size=size.small, title="Short Entry")
+plotshape(algoExitSignalLong and strategy.position_size > 0, style=shape.xcross, location=location.abovebar, color=color.orange, size=size.tiny, title="Algo Exit")
+plotshape(algoExitSignalShort and strategy.position_size < 0, style=shape.xcross, location=location.belowbar, color=color.orange, size=size.tiny, title="Algo Exit")
+bgcolor(protectionActive ? color.new(color.orange, 80) : na, title="保护激活背景")

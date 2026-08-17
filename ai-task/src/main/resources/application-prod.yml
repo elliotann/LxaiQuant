@@ -1,0 +1,90 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: ai-task
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/vdr_shop_test?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+    username: root
+    password: Hxa104906
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      initial-size: 5
+      min-idle: 5
+      max-active: 20
+      max-wait: 60000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 1
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      filters: stat,wall
+      connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+  redis:
+    host: localhost
+    port: 6379
+    password:
+    database: 0
+    timeout: 3000
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: -1ms
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+xxl:
+  job:
+    admin:
+      addresses: http://localhost:9002/xxl-job-admin
+    executor:
+      appname: ai-task-executor
+      address:
+      ip:
+      port: 9998
+      logpath: ../logs/xxl-job/jobhandler
+      logretentiondays: 30
+    accessToken: ai-quant-token
+
+# K线Redis缓存：实盘开启缓存最近1200条K线，减少数据库压力
+kline:
+  redis-cache:
+    enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.chain.ai.trade.task: DEBUG
+    com.xxl.job: INFO
+
+live-advice:
+  scheduled:
+    enabled: true
+    symbols:
+      - symbol: BTC-USDT-SWAP
+        accountId: "2020163742895513602"
+        interval: OKXMIN3
+      - symbol: ETH-USDT-SWAP
+        accountId: "2020163742895513602"
+        interval: OKXMIN3
+
+# 信号SMC展示明细开关：本地测试开启用于核对数据，生产关闭以省性能
+signal:
+  smc:
+    detail-enabled: false
